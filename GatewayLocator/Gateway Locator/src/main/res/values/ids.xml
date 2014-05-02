@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="lbl_long" type="id" />
+    <item name="lbl_lat" type="id" />
+    <item name="lbl_gate" type="id" />
+    <item name="lbl_port" type="id" />
+    <item name="fld_ipaddr" type="id"/>
+    <item name="fld_port" type="id" />
+    <item name="val_long" type="id"/>
+    <item name="val_lat" type="id"/>
+    <item name="val_gate" type="id"/>
+    <item name="btn_action" type="id"/>
+    <item name="btn_send" type="id"/>
+
+
+</resources>
