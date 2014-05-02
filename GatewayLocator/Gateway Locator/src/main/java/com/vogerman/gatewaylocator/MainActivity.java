@@ -34,7 +34,7 @@ public class MainActivity extends Activity implements LocationListener {
     private double longitude, latitude;
     private LocationManager locationManager;
 
-    /* Wfifi Gateway containers */
+    /* Wifi Gateway containers */
     private WifiManager wifiMan;
     DhcpInfo dhcpInfo;
 
@@ -86,7 +86,6 @@ public class MainActivity extends Activity implements LocationListener {
         List<String> enabledProviders;
 
         Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
 
         enabledProviders = locationManager.getProviders(criteria, true);
         if (enabledProviders.isEmpty()
