@@ -10,5 +10,7 @@
     <string name="lbl_port">Port Number:</string>
     <string name="btn_action">Get Info</string>
     <string name="btn_network">Send</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Not now</string>
 
 </resources>

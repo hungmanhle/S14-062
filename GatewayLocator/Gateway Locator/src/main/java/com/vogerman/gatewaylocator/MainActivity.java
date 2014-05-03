@@ -1,7 +1,10 @@
 package com.vogerman.gatewaylocator;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -9,6 +12,7 @@ import android.location.LocationManager;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.format.Formatter;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,6 +35,9 @@ public class MainActivity extends Activity implements LocationListener {
     private EditText etIPAddr;
     private EditText etPortNum;
 
+    private AlertDialog dialog;
+
+    /* Location variables */
     private double longitude, latitude;
     private LocationManager locationManager;
 
@@ -38,15 +45,24 @@ public class MainActivity extends Activity implements LocationListener {
     private WifiManager wifiMan;
     DhcpInfo dhcpInfo;
 
+
+
     public void onAction(View view) {
+
+    }
+
+    private void setGatewayText()
+    {
+        //TODO Make sure Wifi is CONNECTED not just enabled
+
+
+        /* Now get the gateway ip */
         dhcpInfo = wifiMan.getDhcpInfo();
         tvGateway.setText(
                 // Deprecated Function
                 // formatIpAddress assumes IPv4
                 // we also assume IPv4
                 Formatter.formatIpAddress(dhcpInfo.gateway));
-        tvLatitude.setText(String.valueOf(latitude));
-        tvLongitude.setText(String.valueOf(longitude));
     }
 
     public void onSend(View view)
@@ -83,8 +99,26 @@ public class MainActivity extends Activity implements LocationListener {
     @Override
     protected void onResume() {
         super.onResume();
-        List<String> enabledProviders;
 
+        if(!wifiMan.isWifiEnabled())
+        {
+            promptSettings("WiFi Settings",
+                    "You must enable WiFi to access the default gateway."
+                            + "\n\nTurn on WiFi now?",
+                    Settings.ACTION_WIFI_SETTINGS);
+            return;
+        }
+
+        if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+        {
+            promptSettings("GPS Settings",
+                    "You must enable GPS to pin the gateway location."
+                            + "\n\nTurn on GPS now?",
+                    android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            return;
+        }
+
+        List<String> enabledProviders;
         Criteria criteria = new Criteria();
 
         enabledProviders = locationManager.getProviders(criteria, true);
@@ -102,8 +136,9 @@ public class MainActivity extends Activity implements LocationListener {
             }
         }
 
-        tvLatitude.setText("w---");
-        tvLongitude.setText("w---");
+        setGatewayText();
+        tvLatitude.setText(String.valueOf(latitude));
+        tvLongitude.setText(String.valueOf(longitude));
     }
 
     class NetworkThread implements Runnable {
@@ -132,9 +167,48 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
+    private void promptSettings(final String title, final String message, final String settings) {
+
+        // 1. Instantiate an AlertDialog.Builder with its constructor
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // 2. Chain together various setter methods to set the dialog characteristics
+        builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        final Intent intent = new Intent(settings);//Settings.ACTION_WIFI_SETTINGS
+                        int result = 0;
+                        if(settings == Settings.ACTION_LOCATION_SOURCE_SETTINGS) {
+                            result = 1;
+                        } else if(settings == Settings.ACTION_WIFI_SETTINGS) {
+                            result = 2;
+                        }
+                        startActivityForResult(intent, result);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                    }
+                })
+                .setCancelable(false);
+
+
+        // 3. Get the AlertDialog from create()
+        dialog = builder.create();
+
+        dialog.show();
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
+        if(dialog!= null)
+        {
+            dialog.dismiss();
+        }
         locationManager.removeUpdates(this);
     }
 
@@ -153,6 +227,7 @@ public class MainActivity extends Activity implements LocationListener {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+
             return true;
         }
         return super.onOptionsItemSelected(item);

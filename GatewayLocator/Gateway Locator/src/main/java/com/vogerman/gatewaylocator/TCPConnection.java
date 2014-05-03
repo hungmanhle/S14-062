@@ -36,6 +36,7 @@ public class TCPConnection {
      */
     public static TCPConnection create(int portNum, String ipAddr) throws IOException {
         // Add stricter verification if needed..
+        //TODO Verify IP Address!!!!
         Socket sock;
         try{
             sock = new Socket(ipAddr, portNum);
