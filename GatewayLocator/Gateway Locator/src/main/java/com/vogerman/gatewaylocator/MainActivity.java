@@ -113,9 +113,8 @@ public class MainActivity extends Activity implements LocationListener {
 
         if(!wifiMan.isWifiEnabled())
         {
-            promptSettings(R.string.dlg_wifi_title,
-                    R.string.dlg_wifi_body,
-                    Settings.ACTION_WIFI_SETTINGS);
+            tvLatitude.setText(R.string.dlg_no_wifi);
+            tvLongitude.setText(R.string.dlg_no_wifi);
             return;
         }
 
@@ -314,14 +313,8 @@ public class MainActivity extends Activity implements LocationListener {
             case R.id.action_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
-            case R.id.action_gps:
-                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                break;
-            case R.id.action_wifi:
-                startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                break;
             case R.id.action_refresh:
-                setGatewayText();
+                onResume();
                 break;
         }
 

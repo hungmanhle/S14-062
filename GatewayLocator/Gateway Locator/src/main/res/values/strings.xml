@@ -19,11 +19,10 @@
     <string name="ok">OK</string>
     <string name="cancel">Not now</string>
 
-    <string name="dlg_wifi_title">Wifi Settings</string>
-    <string name="dlg_wifi_body">You must enable WiFi to access the default gateway.\n\nTurn on WiFi now?</string>
+    <string name="dlg_no_wifi">Wi-Fi not on</string>
 
-    <string name="dlg_gps_title">GPS Settings</string>
-    <string name="dlg_gps_body">You must enable GPS to locate the default gateway.\n\nTurn on GPS now?</string>
+    <string name="dlg_gps_title">Locating Method Error</string>
+    <string name="dlg_gps_body">You must set Locating Method to use Wi-Fi.</string>
 
 
 </resources>

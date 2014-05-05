@@ -7,8 +7,8 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="C:\dev-tools\Projects\S14-062\GatewayLocator" />
-            <option value="C:\dev-tools\Projects\S14-062\GatewayLocator\Gateway Locator" />
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/Gateway Locator" />
           </set>
         </option>
       </GradleProjectSettings>

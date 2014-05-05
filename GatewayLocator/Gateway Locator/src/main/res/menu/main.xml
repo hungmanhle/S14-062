@@ -14,14 +14,4 @@
         android:orderInCategory="100"
         android:showAsAction="never" />
 
-    <item android:id="@+id/action_gps"
-        android:title="@string/action_gps"
-        android:orderInCategory="100"
-        android:showAsAction="never" />
-
-    <item android:id="@+id/action_wifi"
-        android:title="@string/action_wifi"
-        android:orderInCategory="100"
-        android:showAsAction="never" />
-
 </menu>

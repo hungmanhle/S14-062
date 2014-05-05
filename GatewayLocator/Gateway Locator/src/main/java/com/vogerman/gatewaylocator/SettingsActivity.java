@@ -187,7 +187,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
         final File files[] = folder.listFiles();
 
         CharSequence[] entries = new CharSequence[files.length];
-        if(files.length > 0) {
+        if(files != null && files.length > 0) {
             for (int i = 0; i < files.length; i++) {
                 entries[i] = files[i].toString();
                 entries[i] = entries[i].subSequence(rootPath.length() + 1, entries[i].length());
@@ -205,7 +205,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
         final File files[] = folder.listFiles();
 
         CharSequence[] values = null;
-        if(files.length > 0) {
+        if(files != null && files.length > 0) {
             values = new CharSequence[files.length];
             for (int i = 0; i < files.length; i++) {
                 values[i] = files[i].toString();
