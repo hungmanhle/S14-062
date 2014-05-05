@@ -12,21 +12,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/lbl_long"
-        android:id="@id/lbl_long"
+        android:text="@string/lbl_lat"
+        android:id="@id/lbl_lat"
         android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentLeft="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/lbl_lat"
-        android:id="@id/lbl_lat"
-        android:layout_below="@id/lbl_long"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:text="@string/lbl_long"
+        android:id="@id/lbl_long"
+        android:layout_below="@id/lbl_lat"
+        android:layout_alignParentLeft="true" />
+
 
     <TextView
         android:layout_width="wrap_content"
@@ -34,52 +33,8 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/lbl_gate"
         android:id="@id/lbl_gate"
-        android:layout_below="@id/lbl_lat"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/lbl_ipaddr"
-        android:id="@+id/textView"
-        android:layout_marginTop="47dp"
-        android:layout_below="@id/lbl_gate"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/lbl_port"
-        android:id="@id/lbl_port"
-        android:layout_below="@+id/textView"
-        android:layout_toLeftOf="@id/fld_ipaddr"
-        android:layout_marginTop="31dp" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="text"
-        android:ems="10"
-        android:id="@id/fld_ipaddr"
-        android:layout_above="@id/lbl_port"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:text="192.168.1.68" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@id/fld_port"
-        android:layout_alignTop="@id/lbl_port"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_toRightOf="@id/lbl_port"
-        android:inputType="number"
-        android:text="4747" />
+        android:layout_below="@id/lbl_long"
+        android:layout_alignParentLeft="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -87,9 +42,8 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="---"
         android:id="@id/val_long"
-        android:layout_alignTop="@id/lbl_long"
-        android:layout_alignRight="@id/fld_ipaddr"
-        android:layout_alignEnd="@id/fld_ipaddr" />
+        android:layout_below="@id/val_lat"
+        android:layout_alignParentRight="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -97,7 +51,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="---"
         android:id="@id/val_lat"
-        android:layout_below="@id/val_long"
+        android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
@@ -107,21 +61,10 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="---"
         android:id="@id/val_gate"
-        android:layout_above="@+id/textView"
+        android:layout_below="@id/val_long"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/btn_action"
-        android:id="@id/btn_action"
-        android:onClick="onAction"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@id/fld_port"
-        android:layout_alignEnd="@id/fld_port"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -129,9 +72,8 @@
         android:text="@string/btn_network"
         android:id="@id/btn_send"
         android:onClick="onSend"
-        android:layout_above="@id/btn_action"
-        android:layout_alignRight="@id/btn_action"
-        android:layout_alignEnd="@id/btn_action"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignRight="@id/val_gate"
+        android:layout_alignEnd="@id/val_gate" />
 </RelativeLayout>

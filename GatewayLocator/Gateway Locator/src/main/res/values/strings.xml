@@ -2,7 +2,13 @@
 <resources>
 
     <string name="app_name">Gateway Locator</string>
+    <string name="title_activity_settings">Settings</string>
+
     <string name="action_settings">Settings</string>
+    <string name="action_gps">GPS Settings</string>
+    <string name="action_wifi">WiFi Settings</string>
+    <string name="action_refresh">Refresh</string>
+
     <string name="lbl_long">Longitude:</string>
     <string name="lbl_lat">Latitude:</string>
     <string name="lbl_gate">Gateway:</string>
@@ -12,5 +18,12 @@
     <string name="btn_network">Send</string>
     <string name="ok">OK</string>
     <string name="cancel">Not now</string>
+
+    <string name="dlg_wifi_title">Wifi Settings</string>
+    <string name="dlg_wifi_body">You must enable WiFi to access the default gateway.\n\nTurn on WiFi now?</string>
+
+    <string name="dlg_gps_title">GPS Settings</string>
+    <string name="dlg_gps_body">You must enable GPS to locate the default gateway.\n\nTurn on GPS now?</string>
+
 
 </resources>

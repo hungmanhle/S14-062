@@ -5,23 +5,35 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.MediaScannerConnection;
 import android.net.DhcpInfo;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.text.format.Formatter;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 
@@ -32,10 +44,12 @@ public class MainActivity extends Activity implements LocationListener {
     private TextView tvLatitude;
     private TextView tvGateway;
 
-    private EditText etIPAddr;
-    private EditText etPortNum;
+    private Button btnSend;
 
     private AlertDialog dialog;
+
+    Vibrator vib;
+
 
     /* Location variables */
     private double longitude, latitude;
@@ -43,13 +57,10 @@ public class MainActivity extends Activity implements LocationListener {
 
     /* Wifi Gateway containers */
     private WifiManager wifiMan;
-    DhcpInfo dhcpInfo;
+    private DhcpInfo dhcpInfo;
 
-
-
-    public void onAction(View view) {
-
-    }
+    private SharedPreferences prefs;
+    private Context context = this;
 
     private void setGatewayText()
     {
@@ -67,6 +78,7 @@ public class MainActivity extends Activity implements LocationListener {
 
     public void onSend(View view)
     {
+        btnSend.setVisibility(View.GONE);
         new Thread(new NetworkThread()).start();
     }
 
@@ -78,13 +90,12 @@ public class MainActivity extends Activity implements LocationListener {
 
         wifiMan = (WifiManager)getSystemService(Context.WIFI_SERVICE);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        vib = (Vibrator) this.context.getSystemService(Context.VIBRATOR_SERVICE);
 
         tvLongitude = (TextView)findViewById(R.id.val_long);
         tvLatitude  = (TextView)findViewById(R.id.val_lat);
         tvGateway   = (TextView)findViewById(R.id.val_gate);
-
-        etIPAddr = (EditText)findViewById(R.id.fld_ipaddr);
-        etPortNum = (EditText)findViewById(R.id.fld_port);
+        btnSend     = (Button)findViewById(R.id.btn_send);
     }
 
     @Override
@@ -102,21 +113,21 @@ public class MainActivity extends Activity implements LocationListener {
 
         if(!wifiMan.isWifiEnabled())
         {
-            promptSettings("WiFi Settings",
-                    "You must enable WiFi to access the default gateway."
-                            + "\n\nTurn on WiFi now?",
+            promptSettings(R.string.dlg_wifi_title,
+                    R.string.dlg_wifi_body,
                     Settings.ACTION_WIFI_SETTINGS);
             return;
         }
 
         if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
         {
-            promptSettings("GPS Settings",
-                    "You must enable GPS to pin the gateway location."
-                            + "\n\nTurn on GPS now?",
+            promptSettings(R.string.dlg_gps_title,
+                    R.string.dlg_gps_body,
                     android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             return;
         }
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         List<String> enabledProviders;
         Criteria criteria = new Criteria();
@@ -124,7 +135,7 @@ public class MainActivity extends Activity implements LocationListener {
         enabledProviders = locationManager.getProviders(criteria, true);
         if (enabledProviders.isEmpty()
                 || !enabledProviders.contains(LocationManager.NETWORK_PROVIDER)) {
-            Toast.makeText(this, "Error...", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Error...", Toast.LENGTH_LONG).show();
         } else {
             // Register every location provider returned from LocationManager
             for (String provider : enabledProviders) {
@@ -144,30 +155,71 @@ public class MainActivity extends Activity implements LocationListener {
     class NetworkThread implements Runnable {
 
         public void run() {
-            String packet = longitude + " " + latitude + " " + tvGateway.getText().toString();
+            String strIpAddr = prefs.getString("pref_ipaddr", "");
+            int port = Integer.parseInt(prefs.getString("pref_portnum", ""));
+            String packet = latitude + " " + longitude + " " + tvGateway.getText().toString();
+
+            String filename = new SimpleDateFormat("yyyy-MM-dd")
+                    .format(new Date()) + " Location Log.txt";
+
             TCPConnection connection;
+            FileOutputStream fileStream;
+
             try {
-                // check ip address is valid
-                connection = TCPConnection.create(Integer.parseInt(etPortNum.getText().toString()), etIPAddr.getText().toString());
+                connection = TCPConnection.create(port, strIpAddr);
             } catch(IOException e) {
-                //Toast failed to connect
+                showToast("Server connection failed!");
+                vib.vibrate(500); // milliseconds
+                showButton(btnSend);
                 return;
             }
 
-            connection.appendToPacket(packet);
+            connection.writePacket(packet);
 
             try{
                 connection.sendPacket();
-
             } catch(IOException e) {
-                //Toast failed to send
+                showToast("Packet not sent!");
+                vib.vibrate(500);
             } finally {
                 connection.close();
+                showButton(btnSend);
             }
+
+
+            if(!ExternalStorage.isExternalStorageWritable()) {
+                return;
+            }
+
+
+
+            String rootPath = Environment.getExternalStorageDirectory().getAbsolutePath()
+                    + "/" + getResources().getString(R.string.app_name);
+
+            File folder = new File(rootPath);
+            if(!folder.exists()) {
+                folder.mkdir();
+            }
+
+            File file = new File(folder, filename);
+
+            try {
+                fileStream = new FileOutputStream(file, true);
+                fileStream.write((packet + "\n").getBytes());
+                fileStream.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                showToast("Could not open log file");
+            } catch (IOException e) {
+                showToast("Could not write to log file");
+                e.printStackTrace();
+            }
+
+            scanFile(file.getAbsolutePath());
         }
     }
 
-    private void promptSettings(final String title, final String message, final String settings) {
+    private void promptSettings(final int title, final int message, final String settings) {
 
         // 1. Instantiate an AlertDialog.Builder with its constructor
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -190,10 +242,10 @@ public class MainActivity extends Activity implements LocationListener {
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        finish();
+
                     }
                 })
-                .setCancelable(false);
+                .setCancelable(true);
 
 
         // 3. Get the AlertDialog from create()
@@ -205,12 +257,25 @@ public class MainActivity extends Activity implements LocationListener {
     @Override
     protected void onPause() {
         super.onPause();
-        if(dialog!= null)
-        {
+
+        if(dialog != null && dialog.isShowing()) {
             dialog.dismiss();
         }
+
+
         locationManager.removeUpdates(this);
     }
+
+    private void scanFile(String path) {
+        MediaScannerConnection.scanFile(context,
+                new String[] { path }, null,
+                new MediaScannerConnection.OnScanCompletedListener() {
+                    public void onScanCompleted(String path, Uri uri) {
+                        Log.i("TAG", "Finished scanning " + path);
+                    }
+                });
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -220,16 +285,46 @@ public class MainActivity extends Activity implements LocationListener {
         return true;
     }
 
+    private void showToast(final String toast) {
+        runOnUiThread(new Runnable() {
+            public void run()
+            { Toast.makeText(context, toast, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showButton(final Button btn) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                btn.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-
-            return true;
+        switch(id)
+        {
+            case R.id.action_settings:
+                startActivity(new Intent(this, SettingsActivity.class));
+                break;
+            case R.id.action_gps:
+                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                break;
+            case R.id.action_wifi:
+                startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                break;
+            case R.id.action_refresh:
+                setGatewayText();
+                break;
         }
+
         return super.onOptionsItemSelected(item);
     }
 

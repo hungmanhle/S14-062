@@ -58,12 +58,12 @@ public class TCPConnection {
     }
 
     /**
-     * Appends a space and followed by the value to the packet.
+     * Writes the value to the packet.
      * @param value String to append to the packet.
      */
-    public void appendToPacket(String value)
+    public void writePacket(String value)
     {
-        packet+= " " + value;
+        packet = value;
     }
 
     /**
