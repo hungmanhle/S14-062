@@ -64,11 +64,11 @@ public class tcps extends Thread
 		Connection conn = null;
 		Properties connProps = new Properties();
 		
-		connProps.put("user", "root");
+		connProps.put("username", "root");
 		connProps.put("password", "poop");
 		
 		conn = DriverManager.getConnection(
-				"jdbc:mysql://localhost:3306/predicative"+connProps);
+				"jdbc:mysql://localhost:3306/predicative?user=hank&password=password");
 		System.out.println("MySql Connection established");
 		
 		return conn;
@@ -96,6 +96,45 @@ public class tcps extends Thread
 		{
 			try
 			{
+			
+				// Set up mysql Connection
+				mysqlConn = getConnection();
+				
+				
+				
+				Statement mysqlStatement = mysqlConn.createStatement();
+				
+				
+				mysqlConn.setAutoCommit(false);
+				
+				mysqlStatement.executeUpdate("INSERT INTO test1 (ipAddress,latCoord,longCoord) VALUES ('test','test','test')");
+				mysqlConn.commit();
+				
+				mysqlConn.setAutoCommit(true);
+				
+				
+				String query = "Select * FROM test1";
+				
+				
+				//mysqlStatement = mysqlConn.getConnection();
+				ResultSet mysqlRs = mysqlStatement.executeQuery(query);
+				
+				while(mysqlRs.next()){
+					System.out.println("ID: "+mysqlRs.getInt("id"));
+					System.out.println("IP: "+mysqlRs.getString("ipAddress"));
+					System.out.println("LAT: " + mysqlRs.getString("latCoord"));
+					System.out.println("LONG: " + mysqlRs.getString("longCoord"));
+				}
+				
+				mysqlStatement.close();
+				
+				// Closing mysql Connection
+				closeConnection(mysqlConn);
+			
+			
+			
+			
+			
 				// Listen for connections and accept
 				System.out.println ("Listening on port: " + ListeningSocket.getLocalPort());
 				Socket NewClientSocket = ListeningSocket.accept();
@@ -106,19 +145,25 @@ public class tcps extends Thread
 				System.out.println (ServerString = in.readUTF());
 				System.out.println("THE REMOTE ADDRESS IS: " + NewClientSocket.getRemoteSocketAddress());
 
+
+				
+				
 				// Echo it back
 				DataOutputStream out = new DataOutputStream (NewClientSocket.getOutputStream());
 				out.writeUTF (ServerString + NewClientSocket.getLocalSocketAddress());
 				NewClientSocket.close();
 			}
-
 			catch (SocketTimeoutException s)
 			{
 				System.out.println ("Socket timed out!");
 				break;
 			}
-
 			catch(IOException e)
+			{
+				e.printStackTrace();
+				break;
+			}
+			catch(SQLException e)
 			{
 				e.printStackTrace();
 				break;
@@ -129,27 +174,20 @@ public class tcps extends Thread
 
     public static void main (String [] args)
     {
-	/*
-		if(args.length != 1)
-		{
-			System.out.println("Usage Error : java jserver <port>");
-			System.exit(0);
-		}   
-		int port = Integer.parseInt(args[0]);
-	  */ 
 		try
 		{
-			//Class.forName("com.mysql.jdbc.Driver").newInstance();
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
 		
 		
 			Thread t = new tcps (4747);
 			t.start();
-		} catch(IOException e)
-		{
+		} catch(IOException e){
+			e.printStackTrace();
+		} catch (java.lang.ClassNotFoundException e){
 			e.printStackTrace();
 		} catch(Exception e){
 			e.printStackTrace();
-		}
+		} 
 		
     }
 }
