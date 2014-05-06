@@ -101,8 +101,12 @@ public class MainActivity extends Activity implements LocationListener {
         checkLocationSettings();
 
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        ipAddr = prefs.getString("pref_ipaddr", "");
-        port = (int)Integer.parseInt(prefs.getString("pref_portnum", ""));
+
+        String ipAddr_dfeault = getResources().getString(R.string.pref_default_ip);
+        ipAddr = prefs.getString("pref_ipaddr", ipAddr_dfeault);
+
+        String port_default = getResources().getString(R.string.pref_default_port);
+        port = (int)Integer.parseInt(prefs.getString("pref_portnum", port_default));
 
         List<String> enabledProviders;
         Criteria criteria = new Criteria();
