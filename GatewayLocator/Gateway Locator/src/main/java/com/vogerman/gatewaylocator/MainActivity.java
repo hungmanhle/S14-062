@@ -19,7 +19,6 @@ import android.os.Environment;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.text.format.Formatter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,13 +41,12 @@ public class MainActivity extends Activity implements LocationListener {
     /* Handles to UI elements */
     private TextView tvLongitude;
     private TextView tvLatitude;
-    private TextView tvGateway;
 
     private Button btnSend;
 
     private AlertDialog dialog;
 
-    Vibrator vib;
+    private Vibrator vib;
 
 
     /* Location variables */
@@ -61,20 +59,6 @@ public class MainActivity extends Activity implements LocationListener {
 
     private SharedPreferences prefs;
     private Context context = this;
-
-    private void setGatewayText()
-    {
-        //TODO Make sure Wifi is CONNECTED not just enabled
-
-
-        /* Now get the gateway ip */
-        dhcpInfo = wifiMan.getDhcpInfo();
-        tvGateway.setText(
-                // Deprecated Function
-                // formatIpAddress assumes IPv4
-                // we also assume IPv4
-                Formatter.formatIpAddress(dhcpInfo.gateway));
-    }
 
     public void onSend(View view)
     {
@@ -90,11 +74,10 @@ public class MainActivity extends Activity implements LocationListener {
 
         wifiMan = (WifiManager)getSystemService(Context.WIFI_SERVICE);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        vib = (Vibrator) this.context.getSystemService(Context.VIBRATOR_SERVICE);
+        vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         tvLongitude = (TextView)findViewById(R.id.val_long);
         tvLatitude  = (TextView)findViewById(R.id.val_lat);
-        tvGateway   = (TextView)findViewById(R.id.val_gate);
         btnSend     = (Button)findViewById(R.id.btn_send);
     }
 
@@ -122,7 +105,7 @@ public class MainActivity extends Activity implements LocationListener {
         {
             promptSettings(R.string.dlg_gps_title,
                     R.string.dlg_gps_body,
-                    android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             return;
         }
 
@@ -146,7 +129,6 @@ public class MainActivity extends Activity implements LocationListener {
             }
         }
 
-        setGatewayText();
         tvLatitude.setText(String.valueOf(latitude));
         tvLongitude.setText(String.valueOf(longitude));
     }
@@ -156,7 +138,7 @@ public class MainActivity extends Activity implements LocationListener {
         public void run() {
             String strIpAddr = prefs.getString("pref_ipaddr", "");
             int port = Integer.parseInt(prefs.getString("pref_portnum", ""));
-            String packet = latitude + " " + longitude + " " + tvGateway.getText().toString();
+            String packet = latitude + " " + longitude;
 
             String filename = new SimpleDateFormat("yyyy-MM-dd")
                     .format(new Date()) + " Location Log.txt";

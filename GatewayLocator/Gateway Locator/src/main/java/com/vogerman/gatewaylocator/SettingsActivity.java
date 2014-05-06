@@ -38,7 +38,6 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
     private ListPreference     pref_dellog;
     private SharedPreferences sharedPrefs;
 
-    private Preference pref_location;
     private Preference pref_wifi;
 
 
@@ -119,16 +118,6 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
                 AlertDialog dialog = builder.create();
 
                 dialog.show();
-                return false;
-            }
-        });
-
-
-        pref_location = findPreference("pref_location");
-        pref_location.setOnPreferenceClickListener( new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                 return false;
             }
         });

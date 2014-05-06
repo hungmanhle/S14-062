@@ -34,9 +34,6 @@
             android:key="pref_vib"
             android:defaultValue="true" />
 
-        <Preference android:title="Location"
-            android:key="pref_location" />
-
         <Preference android:title="WiFi"
             android:key="pref_wifi" />
 

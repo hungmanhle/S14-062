@@ -26,25 +26,6 @@
         android:layout_below="@id/lbl_lat"
         android:layout_alignParentLeft="true" />
 
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/lbl_gate"
-        android:id="@id/lbl_gate"
-        android:layout_below="@id/lbl_long"
-        android:layout_alignParentLeft="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="---"
-        android:id="@id/val_long"
-        android:layout_below="@id/val_lat"
-        android:layout_alignParentRight="true" />
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -60,10 +41,12 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="---"
-        android:id="@id/val_gate"
-        android:layout_below="@id/val_long"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:id="@id/val_long"
+        android:layout_below="@id/val_lat"
+        android:layout_alignParentRight="true" />
+
+
+
 
 
     <Button
@@ -73,7 +56,5 @@
         android:id="@id/btn_send"
         android:onClick="onSend"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignRight="@id/val_gate"
-        android:layout_alignEnd="@id/val_gate" />
+        android:layout_alignParentLeft="true" />
 </RelativeLayout>
