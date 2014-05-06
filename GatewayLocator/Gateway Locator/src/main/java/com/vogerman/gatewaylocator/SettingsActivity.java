@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+//TODO Set ip and port defaults
+
 public class SettingsActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener
 {
     private static final String PATTERN =

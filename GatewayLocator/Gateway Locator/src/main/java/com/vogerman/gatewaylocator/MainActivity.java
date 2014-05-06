@@ -38,16 +38,14 @@ import java.util.List;
 
 public class MainActivity extends Activity implements LocationListener {
 
+    private static final int VIB_LEN = 500;
+
     /* Handles to UI elements */
     private TextView tvLongitude;
     private TextView tvLatitude;
-
     private Button btnSend;
-
     private AlertDialog dialog;
-
     private Vibrator vib;
-
 
     /* Location variables */
     private double longitude, latitude;
@@ -59,6 +57,9 @@ public class MainActivity extends Activity implements LocationListener {
 
     private SharedPreferences prefs;
     private Context context = this;
+
+    private String ipAddr;
+    private int port;
 
     public void onSend(View view)
     {
@@ -94,22 +95,14 @@ public class MainActivity extends Activity implements LocationListener {
     protected void onResume() {
         super.onResume();
 
-        if(!wifiMan.isWifiEnabled())
-        {
-            tvLatitude.setText(R.string.dlg_no_wifi);
-            tvLongitude.setText(R.string.dlg_no_wifi);
-            return;
-        }
+        //TODO Check if a thread is not already running to display send button or not
 
-        if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
-        {
-            promptSettings(R.string.dlg_gps_title,
-                    R.string.dlg_gps_body,
-                    Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            return;
-        }
+        checkWifiSettings();
+        checkLocationSettings();
 
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        ipAddr = prefs.getString("pref_ipaddr", "");
+        port = (int)Integer.parseInt(prefs.getString("pref_portnum", ""));
 
         List<String> enabledProviders;
         Criteria criteria = new Criteria();
@@ -136,8 +129,6 @@ public class MainActivity extends Activity implements LocationListener {
     class NetworkThread implements Runnable {
 
         public void run() {
-            String strIpAddr = prefs.getString("pref_ipaddr", "");
-            int port = Integer.parseInt(prefs.getString("pref_portnum", ""));
             String packet = latitude + " " + longitude;
 
             String filename = new SimpleDateFormat("yyyy-MM-dd")
@@ -147,10 +138,13 @@ public class MainActivity extends Activity implements LocationListener {
             FileOutputStream fileStream;
 
             try {
-                connection = TCPConnection.create(port, strIpAddr);
+                connection = TCPConnection.create(port, ipAddr);
             } catch(IOException e) {
-                showToast("Server connection failed!");
-                vib.vibrate(500); // milliseconds
+                showToast(getResources().getString(R.string.tst_connect_fail));
+                if(prefs.getBoolean("pref_vib", true)) {
+                    vib.vibrate(VIB_LEN); // milliseconds
+                }
+
                 showButton(btnSend);
                 return;
             }
@@ -160,19 +154,27 @@ public class MainActivity extends Activity implements LocationListener {
             try{
                 connection.sendPacket();
             } catch(IOException e) {
-                showToast("Packet not sent!");
-                vib.vibrate(500);
+                showToast(getResources().getString(R.string.tst_send_fail));
+                if(prefs.getBoolean("pref_vib", true)) {
+                    vib.vibrate(VIB_LEN);
+                }
             } finally {
                 connection.close();
                 showButton(btnSend);
             }
 
 
-            if(!ExternalStorage.isExternalStorageWritable()) {
+            if(prefs.getBoolean("pref_savelog", true)) {
+                if(!ExternalStorage.isExternalStorageWritable()) {
+                    showToast(getResources().getString(R.string.tst_ext_unavailable));
+                    if (prefs.getBoolean("pref_vib", true)) {
+                        vib.vibrate(VIB_LEN);
+                    }
+                    return;
+                }
+            } else {
                 return;
             }
-
-
 
             String rootPath = Environment.getExternalStorageDirectory().getAbsolutePath()
                     + "/" + getResources().getString(R.string.app_name);
@@ -183,19 +185,23 @@ public class MainActivity extends Activity implements LocationListener {
             }
 
             File file = new File(folder, filename);
-
             try {
                 fileStream = new FileOutputStream(file, true);
                 fileStream.write((packet + "\n").getBytes());
                 fileStream.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
-                showToast("Could not open log file");
+                showToast(getResources().getString(R.string.tst_log_unavailable));
+                if(prefs.getBoolean("pref_vib", true)) {
+                    vib.vibrate(VIB_LEN);
+                }
             } catch (IOException e) {
-                showToast("Could not write to log file");
                 e.printStackTrace();
+                showToast(getResources().getString(R.string.tst_write_unavailable));
+                if(prefs.getBoolean("pref_vib", true)) {
+                    vib.vibrate(VIB_LEN);
+                }
             }
-
             scanFile(file.getAbsolutePath());
         }
     }
@@ -242,8 +248,6 @@ public class MainActivity extends Activity implements LocationListener {
         if(dialog != null && dialog.isShowing()) {
             dialog.dismiss();
         }
-
-
         locationManager.removeUpdates(this);
     }
 
@@ -317,4 +321,24 @@ public class MainActivity extends Activity implements LocationListener {
     public void onProviderDisabled(String s) {
 
     }
+
+    private void checkLocationSettings() {
+        if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+        {
+            promptSettings(R.string.dlg_gps_title,
+                    R.string.dlg_gps_body,
+                    Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            return;
+        }
+    }
+
+    private void checkWifiSettings() {
+        if(!wifiMan.isWifiEnabled())
+        {
+            tvLatitude.setText(R.string.dlg_no_wifi);
+            tvLongitude.setText(R.string.dlg_no_wifi);
+            return;
+        }
+    }
+
 }
