@@ -1,40 +1,37 @@
 
 /*---------------------------------------------------------------------------------------
---	Source File:		tcps.java - A simple (multi-threaded) Java TCP echo server
---
---	Classes:			tcps - public class
---				ServerSocket - java.net
---				Socket	     - java.net
---				
---	Methods:
---				getRemoteSocketAddress 	(Socket Class)
---				getLocalSocketAddress  	(Socket Class)
---				getInputStream		(Socket Class)
---				getOutputStream		(Socket Class)
---				getLocalPort		(ServerSocket Class)
---				setSoTimeout		(ServerSocket Class)
---				accept			(ServerSocket Class)
---				
---
---	Date:			February 8, 2014
---
---	Revisions:		(Date and Description)
---					
---	Designer:		Aman Abdulla
---				
---	Programmer:		Aman Abdulla
---
---	Notes:
---	The program illustrates the use of the java.net package to implement a basic
--- 	echo server.The server is multi-threaded so every new client connection is 
---	handled by a separate thread.
---	
---	The application receives a string from an echo client and simply sends back after 
---	displaying it. 
---
---	Generate the class file and run it as follows:
---			javac tcps
---			java tcps <server port>
+	tcps.java - Our Server/DB
+
+	Classes:			tcps - public class
+				ServerSocket - java.net
+				Socket	     - java.net
+				
+	Methods:
+				getRemoteSocketAddress 	(Socket Class)
+				getLocalSocketAddress  	(Socket Class)
+				getInputStream		(Socket Class)
+				getOutputStream		(Socket Class)
+				getLocalPort		(ServerSocket Class)
+				setSoTimeout		(ServerSocket Class)
+				accept			(ServerSocket Class)
+				
+
+	Date:			February 8, 2014
+
+	By:		Hung Le
+
+
+	Notes:
+	The program illustrates the use of the java.net package to implement a basic
+ 	echo server.The server is multi-threaded so every new client connection is 
+	handled by a separate thread.
+	
+	The application receives a string from an echo client and simply sends back after 
+	displaying it. 
+
+	Generate the class file and run it as follows:
+			javac tcps
+			java tcps 
 ---------------------------------------------------------------------------------------*/
 
 import java.net.*;
@@ -74,7 +71,7 @@ public class tcps extends Thread
 		return conn;
 	}
 	
-	public static void closeConnection(Connection connArg) {
+	public void closeConnection(Connection connArg) {
 		System.out.println("Releasing all open resources ...");
 		try 
 		{
@@ -89,6 +86,21 @@ public class tcps extends Thread
 			sqle.printStackTrace();
 		}
 	}
+	
+	public void insertNewRow(String IP, String Latitude, String Longitude) throws SQLException{
+		
+			Connection mysqlConn = getConnection();
+			Statement mysqlStatement = mysqlConn.createStatement();
+			
+			mysqlConn.setAutoCommit(false);
+			
+			mysqlStatement.executeUpdate("INSERT INTO test1 (ipAddress, latCoord, longCoord) VALUES ('"+IP+"','"+Latitude+"','"+Longitude+"')");
+			mysqlConn.commit();
+			
+			mysqlConn.setAutoCommit(true);
+			closeConnection(mysqlConn);
+
+	}
 
 	public void run()
 	{
@@ -96,27 +108,24 @@ public class tcps extends Thread
 		{
 			try
 			{
-			
+				String remoteIP = "";
+				String Latitude = "";
+				String Longitude = "";
+				
+				/**    THIS SHIT OLD
 				// Set up mysql Connection
 				mysqlConn = getConnection();
-				
-				
-				
+
 				Statement mysqlStatement = mysqlConn.createStatement();
-				
-				
 				mysqlConn.setAutoCommit(false);
 				
 				mysqlStatement.executeUpdate("INSERT INTO test1 (ipAddress,latCoord,longCoord) VALUES ('test','test','test')");
 				mysqlConn.commit();
 				
 				mysqlConn.setAutoCommit(true);
-				
-				
 				String query = "Select * FROM test1";
+				mysqlStatement = mysqlConn.getConnection();
 				
-				
-				//mysqlStatement = mysqlConn.getConnection();
 				ResultSet mysqlRs = mysqlStatement.executeQuery(query);
 				
 				while(mysqlRs.next()){
@@ -125,13 +134,11 @@ public class tcps extends Thread
 					System.out.println("LAT: " + mysqlRs.getString("latCoord"));
 					System.out.println("LONG: " + mysqlRs.getString("longCoord"));
 				}
-				
 				mysqlStatement.close();
-				
 				// Closing mysql Connection
 				closeConnection(mysqlConn);
 			
-			
+				*/
 			
 			
 			
@@ -145,12 +152,23 @@ public class tcps extends Thread
 				System.out.println (ServerString = in.readUTF());
 				System.out.println("THE REMOTE ADDRESS IS: " + NewClientSocket.getRemoteSocketAddress());
 
+				
+
+				myScanner = new Scanner(ServerString);
+				Latitude = myScanner.next();
+				Longitude = myScanner.next();
+				myScanner.close();
+				
+				remoteIP = (NewClientSocket.getRemoteSocketAddress().toString());
+				remoteIP = remoteIP.substring(remoteIP.indexOf("/")+1, remoteIP.indexOf(":"));
 
 				
 				
+				insertNewRow(remoteIP,Latitude,Longitude);
+				
 				// Echo it back
 				DataOutputStream out = new DataOutputStream (NewClientSocket.getOutputStream());
-				out.writeUTF (ServerString + NewClientSocket.getLocalSocketAddress());
+				out.writeUTF ("Thanks fuker, was successful");
 				NewClientSocket.close();
 			}
 			catch (SocketTimeoutException s)
