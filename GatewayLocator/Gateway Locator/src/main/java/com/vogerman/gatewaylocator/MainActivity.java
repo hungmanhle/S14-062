@@ -13,6 +13,7 @@ import android.location.LocationManager;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Vibrator;
@@ -62,7 +63,8 @@ public class MainActivity extends Activity implements LocationListener {
     public void onSend(View view)
     {
         btnSend.setVisibility(View.GONE);
-        new Thread(new NetworkThread()).start();
+        new NetworkTask().execute(latitude + " " + longitude);
+//        new Thread(new NetworkThread()).start();
     }
 
 
@@ -128,69 +130,132 @@ public class MainActivity extends Activity implements LocationListener {
         tvLongitude.setText(String.valueOf(longitude));
     }
 
-    class NetworkThread implements Runnable {
 
-        public void run() {
-            String packet = latitude + " " + longitude;
+    private class NetworkTask extends AsyncTask<String, String, String> {
+        private TCPConnection connection;
+        private boolean keepLog;
 
-            String filename = new SimpleDateFormat("yyyy-MM-dd")
-                    .format(new Date()) + " Location Log.txt";
+        private final String filename = new SimpleDateFormat("yyyy-MM-dd")
+                        .format(new Date()) + " Location Log.txt";
 
-            TCPConnection connection;
-            FileOutputStream fileStream;
+        private String filePath;
+        private File file;
+        private FileOutputStream fileStream;
 
-            try {
-                connection = TCPConnection.create(port, ipAddr);
-            } catch (IOException e) {
-                e.printStackTrace();
-
-                showErrorToast(R.string.tst_connect_fail);
-                showButton(btnSend);
-                return;
+        protected void onPreExecute() {
+            if((keepLog = isLogging())) {
+                filePath = Environment.getExternalStorageDirectory().getAbsolutePath()
+                        + "/" + getResources().getString(R.string.app_name);
             }
 
-            try{
-                connection.sendPacket(packet);
-                showToast(connection.receive());
-            } catch(IOException e) {
-                showErrorToast(R.string.tst_send_fail);
-            } finally {
-                connection.close();
-                showButton(btnSend);
-            }
-
-            if(prefs.getBoolean("pref_savelog", true)) {
-                if(!ExternalStorage.isExternalStorageWritable()) {
-                    showErrorToast(R.string.tst_ext_unavailable);
-                    return;
-                }
-            } else {
-                return;
-            }
-
-            String rootPath = Environment.getExternalStorageDirectory().getAbsolutePath()
-                    + "/" + getResources().getString(R.string.app_name);
-
-            File folder = new File(rootPath);
+            File folder = new File(filePath);
             if(!folder.exists()) {
                 folder.mkdir();
             }
 
-            File file = new File(folder, filename);
+            file = new File(folder, filename);
+        }
+
+        @Override
+        protected String doInBackground(String... packets) {
+
+            SimpleDateFormat hourFormat = new SimpleDateFormat("H:mm:ss");
+            String time = "";
+
             try {
                 fileStream = new FileOutputStream(file, true);
-                fileStream.write((packet + "\n").getBytes());
-                fileStream.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
-                showErrorToast(R.string.tst_log_unavailable);
-            } catch (IOException e) {
-                e.printStackTrace();
-                showErrorToast(R.string.tst_write_unavailable);
-
             }
-            scanFile(file.getAbsolutePath());
+
+            try {
+                time = hourFormat.format(new Date());
+                connection = TCPConnection.create(port, ipAddr);
+                publishProgress("Connection established!");
+                fileStream.write((time + " Connection established" + "\n").getBytes());
+            } catch (IOException e) {
+                try {
+                    fileStream.write((time + "FAILED!! connection at: " + "\n").getBytes());
+                    fileStream.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                e.printStackTrace();
+                vibrate();
+                return getResources().getString(R.string.tst_connect_fail);
+            }
+
+            for (int i = 0; i < packets.length; i++) {
+                try {
+                    time = hourFormat.format(new Date());
+                    fileStream.write(time.getBytes());
+                    connection.sendPacket(packets[i]);
+                    fileStream.write((" Sent packet[" + i + "]: " + packets[i] + "\n").getBytes());
+
+                    time = hourFormat.format(new Date());
+                    fileStream.write((time + " ").getBytes());
+                    fileStream.write(("Received response: " + connection.receive() + "\n").getBytes());
+
+                    publishProgress("Packet: " + (i + 1) + " sent");
+                } catch (IOException e) {
+                    time = hourFormat.format(new Date());
+                    try {
+                        fileStream.write((time + "FAILED!!! I/O" + "\n").getBytes());
+                        connection.close();
+                        fileStream.close();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    e.printStackTrace();
+                    vibrate();
+                    publishProgress("Packet: " + (i + 1) + " failed");
+                }             }
+
+            try {
+                fileStream.write("------------------------".getBytes());
+                connection.close();
+                fileStream.close();
+            } catch (IOException e) {
+                vibrate();
+//                publishProgress("File close failed");
+                e.printStackTrace();
+            }
+
+            return getResources().getString(R.string.tst_send_success);
         }
+
+        protected void onProgressUpdate(String... strings) {
+            Toast.makeText(context, strings[0], Toast.LENGTH_SHORT).show();
+        }
+
+        protected void onPostExecute(String string) {
+            showButton(btnSend);
+            scanFile(file.getAbsolutePath());
+            Toast.makeText(context, string, Toast.LENGTH_SHORT).show();
+        }
+
+        private void scanFile(String path) {
+            MediaScannerConnection.scanFile(context,
+                    new String[] { path }, null,
+                    new MediaScannerConnection.OnScanCompletedListener() {
+                        public void onScanCompleted(String path, Uri uri) {
+                            Log.i("TAG", "Finished scanning " + path);
+                        }
+                    });
+        }
+
+        private boolean isLogging() {
+            if(prefs.getBoolean("pref_savelog", true)) {
+                if(!ExternalStorage.isExternalStorageWritable()) {
+                    showErrorToast(R.string.tst_ext_unavailable);
+                    return false;
+                }
+            } else {
+                return false;
+            }
+            return true;
+        }
+
     }
 
     private void promptSettings(final int title, final int message, final String settings) {
@@ -226,17 +291,6 @@ public class MainActivity extends Activity implements LocationListener {
         locationManager.removeUpdates(this);
     }
 
-    private void scanFile(String path) {
-        MediaScannerConnection.scanFile(context,
-                new String[] { path }, null,
-                new MediaScannerConnection.OnScanCompletedListener() {
-                    public void onScanCompleted(String path, Uri uri) {
-                        Log.i("TAG", "Finished scanning " + path);
-                    }
-                });
-    }
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -250,9 +304,7 @@ public class MainActivity extends Activity implements LocationListener {
     }
 
     private void showErrorToast(final String toast) {
-        if(prefs.getBoolean("pref_vib", true)) {
-            vib.vibrate(VIB_LEN);
-        }
+        vibrate();
         showToast(toast);
     }
 
@@ -260,7 +312,7 @@ public class MainActivity extends Activity implements LocationListener {
     private void showToast(final String toast) {
         runOnUiThread(new Runnable() {
             public void run()
-            { Toast.makeText(context, toast, Toast.LENGTH_SHORT).show();
+            { Toast.makeText(context, toast, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -304,6 +356,13 @@ public class MainActivity extends Activity implements LocationListener {
     @Override
     public void onProviderDisabled(String s) {
 
+    }
+
+    private void vibrate()
+    {
+        if(prefs.getBoolean("pref_vib", true)) {
+            vib.vibrate(VIB_LEN);
+        }
     }
 
     private void checkLocationSettings() {

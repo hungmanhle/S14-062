@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="pref_default_ip">192.168.0.1</string>
-    <string name="pref_default_port">4747</string>
-
-    <bool name="pref_default_vib">true</bool>
-    <bool name="pref_default_log">true</bool>
-</resources>

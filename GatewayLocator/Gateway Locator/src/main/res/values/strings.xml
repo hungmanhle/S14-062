@@ -11,6 +11,7 @@
 
     <string name="tst_connect_fail">Could not connect to the Server</string>
     <string name="tst_send_fail">Could not send the packet</string>
+    <string name="tst_send_success">Sending complete!</string>
     <string name="tst_ext_unavailable">Could not access storage folder</string>
     <string name="tst_log_unavailable">Could not open log file</string>
     <string name="tst_write_unavailable">Could not write to log file</string>

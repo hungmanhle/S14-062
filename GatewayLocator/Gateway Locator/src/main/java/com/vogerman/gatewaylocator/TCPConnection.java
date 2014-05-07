@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
@@ -14,7 +15,7 @@ public class TCPConnection {
     private int port;
     private String ipAddress;
     private String packet;
-
+    private static final int TIMEOUT = 1000;
     /**
      * Basic constructor.
      * @param portNum server's port number
@@ -39,9 +40,9 @@ public class TCPConnection {
      * @return new connection if successful; null otherwise.
      */
     public static TCPConnection create(int portNum, String ipAddr) throws IOException {
-        Socket sock;
+        Socket sock = new Socket();
         try{
-            sock = new Socket(ipAddr, portNum);
+            sock.connect(new InetSocketAddress(ipAddr, portNum), TIMEOUT);
         } catch (IOException e) {
             throw e;
         }
