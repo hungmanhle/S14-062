@@ -12,7 +12,7 @@ import java.util.Scanner;
  * @author a00826347
  */
 public class TracerouteManip {
-    private static final int EXTRA_LINES = 4;
+    private static final int EXTRA_LINES = 5;
     private String dump;
     private ArrayList<TRNode> nodeList;
     private ArrayList<TREdge> edgeList;
@@ -20,28 +20,39 @@ public class TracerouteManip {
     
     public TracerouteManip(String dump)
     {
-        this.dump = dump; 
+        this.dump = dump;
+        nodeList = new ArrayList();
+        edgeList = new ArrayList();
+        nodeCount = 0;
+        
+    }
+    
+    public void buildItAll()
+    {
         findNodeCount();
         buildNodeList();
+        buildEdgeList();
     }
     
     private void buildNodeList() {
         Scanner scan = new Scanner(dump);
         //get past the bs at top
-        scan.nextLine(); scan.nextLine();
+        scan.nextLine(); scan.nextLine(); scan.nextLine();
         
         int i;
         for(i = 0; i < nodeCount; i++)
         {
             String tmpLine = scan.nextLine();
-            nodeList.add(new TRNode(tmpLine));
+            TRNode tmpNode = new TRNode(tmpLine);
+            tmpNode.parseLine();
+            nodeList.add(tmpNode);
         }
         
     }
     
     //private set
     
-    private int findNodeCount() {
+    private void findNodeCount() {
         
         //return nodeCount;
         
@@ -51,28 +62,33 @@ public class TracerouteManip {
         {
             scan.nextLine();
         }
-        return i - EXTRA_LINES;
+        nodeCount = i - EXTRA_LINES;
     }
     
     
     private void buildEdgeList()
     {
-        //TODO 
-        //for(int i = 0; )
+        
+        for(int i = 1; i < nodeCount; i++ )
+        {
+            TREdge tmp = new TREdge(nodeList.get(i-1), nodeList.get(i));
+            edgeList.add(tmp);
+        }
     }
     
     public TRNode getNode(int c)
     {
-        TRNode node = nodeList.get(c);
-        
-        
-        return node;
+       return nodeList.get(c);
     }
     
-    //public ArrayList parseHop()
+     public TREdge getEdge(int c)
     {
-        
-        
+        return edgeList.get(c);
     }
+     
+     public int getNodeCount()
+     {
+         return nodeCount;
+     }
     
 }

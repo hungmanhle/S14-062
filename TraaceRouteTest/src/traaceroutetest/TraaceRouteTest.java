@@ -26,21 +26,29 @@ public class TraaceRouteTest {
     private final static String os = System.getProperty("os.name");
     
     public static void main(String[] args) {
-        /*String result = "";
+        String result = "";
         try {
             InetAddress placeToTrace = InetAddress.getByName(args[0]);
             
             result = traceRoute(placeToTrace);
-            System.out.println(result);
+            System.out.println(result + "\n");
+            TracerouteManip trm = new TracerouteManip(result);
+            trm.buildItAll();
+            
+            for(int i = 0; i < (trm.getNodeCount()-1); i++)
+            {
+                System.out.println("Edge " + (i+1) + ": \n" + trm.getEdge(i).toString());
+            }
             
         } catch (UnknownHostException ex) {
             Logger.getLogger(TraaceRouteTest.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println(ex);
         }
-        * */
-        TRNode testNode = new TRNode("1     2 ms     2 ms     4 ms  142.232.246.62");
+        
+        /*TRNode testNode = new TRNode("1     2 ms     2 ms     4 ms  142.232.246.62");
         
         System.out.println("IP: " + testNode.getIpAddr() + "\nAvgHop: " + testNode.getAvgHopTime());
+        * */
     }
     
     public static String traceRoute(InetAddress address){

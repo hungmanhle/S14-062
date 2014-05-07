@@ -19,28 +19,50 @@ public class TRNode {
 
     public TRNode(String TrLine) {
         rawLine = TrLine;
-        parseLine();
+        IP = "";
+        AverageHoptime = 0;
+        //parseLine();
     }
     
-    private void parseLine() {
+    public void parseLine() {
         Scanner scan = new Scanner(rawLine);
 
         int tempTotal = 0;
-
-        //get rid of line number
+        int numsamples = 0;
+        String tempToken = "";
+        
+        //get rid of line number        
         scan.next();
+        
+        
         for (int i = 0; i < NUM_TESTS; i++) {
             if (scan.hasNextInt()) {
                 //scan time
                 tempTotal += scan.nextInt();
+                numsamples++;
+                
+                // get rid of "ms"
+                scan.next();
+                
             }
-            //else if ()
-            // get rid of "ms"
-            scan.next();
+            else if ((tempToken = scan.next()).equals("*") )
+            {
+                //do nothing
+            }
+            else if (tempToken.equals("<1"))
+            {
+                tempTotal += 1;
+                numsamples++;
+                // get rid of "ms"
+                scan.next();
+                
+            }
+            
         }
         //this should be the ip if weparsed everything else right
         IP = scan.next();
-        AverageHoptime = tempTotal / NUM_TESTS;
+        //System.out.println(IP);
+        AverageHoptime = tempTotal / numsamples;
     }
 
     public int getAvgHopTime() {
