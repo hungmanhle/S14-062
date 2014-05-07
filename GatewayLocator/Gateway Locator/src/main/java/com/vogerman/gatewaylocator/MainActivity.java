@@ -11,7 +11,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.MediaScannerConnection;
-import android.net.DhcpInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -53,7 +52,6 @@ public class MainActivity extends Activity implements LocationListener {
 
     /* Wifi Gateway containers */
     private WifiManager wifiMan;
-    private DhcpInfo dhcpInfo;
 
     private SharedPreferences prefs;
     private Context context = this;
@@ -143,37 +141,27 @@ public class MainActivity extends Activity implements LocationListener {
 
             try {
                 connection = TCPConnection.create(port, ipAddr);
-            } catch(IOException e) {
-                showToast(getResources().getString(R.string.tst_connect_fail));
-                if(prefs.getBoolean("pref_vib", true)) {
-                    vib.vibrate(VIB_LEN); // milliseconds
-                }
+            } catch (IOException e) {
+                e.printStackTrace();
 
+                showErrorToast(R.string.tst_connect_fail);
                 showButton(btnSend);
                 return;
             }
 
-            connection.writePacket(packet);
-
             try{
-                connection.sendPacket();
+                connection.sendPacket(packet);
+                showToast(connection.receive());
             } catch(IOException e) {
-                showToast(getResources().getString(R.string.tst_send_fail));
-                if(prefs.getBoolean("pref_vib", true)) {
-                    vib.vibrate(VIB_LEN);
-                }
+                showErrorToast(R.string.tst_send_fail);
             } finally {
                 connection.close();
                 showButton(btnSend);
             }
 
-
             if(prefs.getBoolean("pref_savelog", true)) {
                 if(!ExternalStorage.isExternalStorageWritable()) {
-                    showToast(getResources().getString(R.string.tst_ext_unavailable));
-                    if (prefs.getBoolean("pref_vib", true)) {
-                        vib.vibrate(VIB_LEN);
-                    }
+                    showErrorToast(R.string.tst_ext_unavailable);
                     return;
                 }
             } else {
@@ -195,16 +183,11 @@ public class MainActivity extends Activity implements LocationListener {
                 fileStream.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
-                showToast(getResources().getString(R.string.tst_log_unavailable));
-                if(prefs.getBoolean("pref_vib", true)) {
-                    vib.vibrate(VIB_LEN);
-                }
+                showErrorToast(R.string.tst_log_unavailable);
             } catch (IOException e) {
                 e.printStackTrace();
-                showToast(getResources().getString(R.string.tst_write_unavailable));
-                if(prefs.getBoolean("pref_vib", true)) {
-                    vib.vibrate(VIB_LEN);
-                }
+                showErrorToast(R.string.tst_write_unavailable);
+
             }
             scanFile(file.getAbsolutePath());
         }
@@ -212,25 +195,16 @@ public class MainActivity extends Activity implements LocationListener {
 
     private void promptSettings(final int title, final int message, final String settings) {
 
-        // 1. Instantiate an AlertDialog.Builder with its constructor
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        // 2. Chain together various setter methods to set the dialog characteristics
         builder.setTitle(title)
                 .setMessage(message)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.dlg_ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        final Intent intent = new Intent(settings);//Settings.ACTION_WIFI_SETTINGS
-                        int result = 0;
-                        if(settings == Settings.ACTION_LOCATION_SOURCE_SETTINGS) {
-                            result = 1;
-                        } else if(settings == Settings.ACTION_WIFI_SETTINGS) {
-                            result = 2;
-                        }
-                        startActivityForResult(intent, result);
+                        final Intent intent = new Intent(settings);
+                        startActivity(intent);
                     }
                 })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.dlg_cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
 
@@ -238,10 +212,7 @@ public class MainActivity extends Activity implements LocationListener {
                 })
                 .setCancelable(true);
 
-
-        // 3. Get the AlertDialog from create()
         dialog = builder.create();
-
         dialog.show();
     }
 
@@ -274,6 +245,18 @@ public class MainActivity extends Activity implements LocationListener {
         return true;
     }
 
+    private void showErrorToast(final int res) {
+        showErrorToast(getResources().getString(res));
+    }
+
+    private void showErrorToast(final String toast) {
+        if(prefs.getBoolean("pref_vib", true)) {
+            vib.vibrate(VIB_LEN);
+        }
+        showToast(toast);
+    }
+
+
     private void showToast(final String toast) {
         runOnUiThread(new Runnable() {
             public void run()
@@ -301,10 +284,7 @@ public class MainActivity extends Activity implements LocationListener {
         switch(id)
         {
             case R.id.action_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
-                break;
-            case R.id.action_refresh:
-                onResume();
+                startActivity(new Intent(context, SettingsActivity.class));
                 break;
         }
 

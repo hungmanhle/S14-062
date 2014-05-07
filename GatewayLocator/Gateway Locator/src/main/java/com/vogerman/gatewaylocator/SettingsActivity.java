@@ -57,7 +57,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
                 if (o instanceof String && isIPv4((String) o)) {
                     return true;
                 }
-                Toast.makeText(SettingsActivity.this, "Invalid IPv4 format.", Toast.LENGTH_LONG).show();
+                Toast.makeText(SettingsActivity.this, getResources().getString(R.string.tst_inval_ip), Toast.LENGTH_LONG).show();
                 return false;
             }
         });
@@ -65,7 +65,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
         pref_portNum = (EditTextPreference)findPreference("pref_portnum");
         pref_portNum.setSummary(sharedPrefs.getString("pref_portnum", ""));
 
-        pref_saveLog = (CheckBoxPreference)findPreference(("pref_savelog"));
+        pref_saveLog = (CheckBoxPreference)findPreference("pref_savelog");
         pref_saveLog.setSummary(Environment.getExternalStorageDirectory().toString()
             + "/" + getResources().getString(R.string.app_name));
         pref_saveLog.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
@@ -74,7 +74,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
                 if (o instanceof Boolean && ExternalStorage.isExternalStorageWritable()) {
                     return true;
                 }
-                Toast.makeText(SettingsActivity.this, "Cannot access external storage", Toast.LENGTH_LONG).show();
+                Toast.makeText(SettingsActivity.this, getResources().getString(R.string.tst_log_unavailable), Toast.LENGTH_LONG).show();
                 return false;
             }
         });
@@ -102,16 +102,16 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
                 final String opt = (String)o;
                 AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
 
-                builder.setTitle("Confirm")
-                        .setMessage("Are you sure you want to delete this file:\n"
-                            + opt)
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                builder.setTitle(getResources().getString(R.string.dlg_del_title))
+                        .setMessage(getResources().getString(R.string.dlg_del_body)
+                                + "\n\n" + opt)
+                        .setPositiveButton(R.string.dlg_ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 new File(opt).delete();
                                 setLogProperties();
                             }
                         })
-                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        .setNegativeButton(R.string.dlg_cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                             }
@@ -144,11 +144,15 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
         }
 
         if(pref instanceof ListPreference) {
-            pref_dellog.setEntries(getLogEntries());
-            pref_dellog.setEntryValues(getLogValues());
+            CharSequence[] seq;
 
-            pref_open.setEntries(getLogEntries());
-            pref_open.setEntryValues(getLogValues());
+            seq = getLogEntries();
+            pref_dellog.setEntries(seq);
+            pref_open.setEntries(seq);
+
+            seq = getLogValues();
+            pref_dellog.setEntryValues(seq);
+            pref_open.setEntryValues(seq);
         }
     }
 

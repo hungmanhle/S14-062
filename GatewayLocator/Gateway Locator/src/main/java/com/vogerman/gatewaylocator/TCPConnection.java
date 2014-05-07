@@ -1,5 +1,6 @@
 package com.vogerman.gatewaylocator;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -12,7 +13,6 @@ public class TCPConnection {
     private Socket socket;
     private int port;
     private String ipAddress;
-    //private Socket socket;
     private String packet;
 
     /**
@@ -28,6 +28,10 @@ public class TCPConnection {
         socket = sock;
     }
 
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
     /**
      * Verifies IP and port are valid and creates a connection.
      * @param portNum server port to connect to.
@@ -35,25 +39,31 @@ public class TCPConnection {
      * @return new connection if successful; null otherwise.
      */
     public static TCPConnection create(int portNum, String ipAddr) throws IOException {
-        // Add stricter verification if needed..
-        //TODO Verify IP Address!!!!
         Socket sock;
         try{
             sock = new Socket(ipAddr, portNum);
         } catch (IOException e) {
             throw e;
-        //} catch (NetworkOnMainThreadException e) {
-        //    return null;
         }
 
         return new TCPConnection(portNum, ipAddr, sock);
+    }
+
+    public String receive() throws IOException {
+        String message = "";
+        try {
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            message = in.readUTF();
+        } catch (IOException e) {
+            throw e;
+        }
+        return message;
     }
 
     public void close() {
         try {
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -66,19 +76,24 @@ public class TCPConnection {
         packet = value;
     }
 
+    public boolean sendPacket(String packet) throws IOException {
+        this.packet = packet;
+        return sendPacket();
+    }
+
     /**
      * Sends the packet currently in the buffer.
      * @return true if sent successfully; false otherwise.
      */
-    public void sendPacket() throws IOException {
+    public boolean sendPacket() throws IOException {
         try {
             OutputStream os = socket.getOutputStream();
             DataOutputStream out = new DataOutputStream(os);
             out.writeUTF(packet);
         } catch (IOException e) {
-            e.printStackTrace();
             throw e;
         }
+        return true;
     }
 
     /**

@@ -6,16 +6,14 @@
             android:key="pref_ipaddr"
             android:selectAllOnFocus="true"
             android:title="IP Address"
-            android:summary="Server IP Address to connect to."
-            android:defaultValue="192.168.0.1"/>
+            android:defaultValue="@string/pref_default_ip"/>
 
         <EditTextPreference
             android:key="pref_portnum"
             android:inputType="number"
             android:selectAllOnFocus="true"
             android:title="Port Number"
-            android:summary="Open connection port on the server."
-            android:defaultValue="4747" />
+            android:defaultValue="@string/pref_default_port" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Log File">
