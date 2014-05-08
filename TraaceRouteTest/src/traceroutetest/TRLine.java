@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package traaceroutetest;
+package traceroutetest;
 
 import java.util.Scanner;
 
@@ -10,14 +10,14 @@ import java.util.Scanner;
  *
  * @author a00826347
  */
-public class TRNode {
+public class TRLine {
 
     private static final int NUM_TESTS = 3;
     private String rawLine;
     private String IP;
     private int AverageHoptime;
 
-    public TRNode(String TrLine) {
+    public TRLine(String TrLine) {
         rawLine = TrLine;
         IP = "";
         AverageHoptime = 0;
