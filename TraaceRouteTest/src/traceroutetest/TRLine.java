@@ -51,6 +51,7 @@ public class TRLine {
             }
             else if (tempToken.equals("<1"))
             {
+                
                 tempTotal += 1;
                 numsamples++;
                 // get rid of "ms"
@@ -59,7 +60,7 @@ public class TRLine {
             }
             
         }
-        //this should be the ip if weparsed everything else right
+        //this should be the ip if we parsed everything else right
         IP = scan.next();
         //System.out.println(IP);
         AverageHoptime = tempTotal / numsamples;

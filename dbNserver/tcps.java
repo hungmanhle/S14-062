@@ -168,7 +168,7 @@ public class tcps extends Thread
 				
 				// Echo it back
 				DataOutputStream out = new DataOutputStream (NewClientSocket.getOutputStream());
-				out.writeUTF ("Thanks fuker, was successful");
+				out.writeUTF ("was successful");
 				NewClientSocket.close();
 			}
 			catch (SocketTimeoutException s)
