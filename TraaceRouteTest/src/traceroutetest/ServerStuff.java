@@ -20,7 +20,7 @@ import java.util.Scanner;
  */
 public class ServerStuff extends Thread{
     
-    String ServerString;
+    
     private ServerSocket ListeningSocket;
     private DBStuff dbAccess;
 
@@ -34,15 +34,17 @@ public class ServerStuff extends Thread{
     }
     
     public void run()
-	{              
+	{           
+            Scanner myScanner;
+            String remoteIP = "";
+            String Latitude = "";
+            String Longitude = "";
+            String ServerString;
             while(true)
             {
                 try
                 {
-                    Scanner myScanner;
-                    String remoteIP = "";
-                    String Latitude = "";
-                    String Longitude = "";
+                    
 
 
                     // Listen for connections and accept
@@ -54,7 +56,26 @@ public class ServerStuff extends Thread{
                     DataInputStream in = new DataInputStream (NewClientSocket.getInputStream());
                     ServerString = in.readUTF();
                     
-
+                     // Echo it back
+                    DataOutputStream out = new DataOutputStream (NewClientSocket.getOutputStream());
+                    out.writeUTF ("I now know where you are!");
+                    //IP comes with port number
+                    remoteIP = (NewClientSocket.getRemoteSocketAddress().toString());
+                    
+                    NewClientSocket.close();
+                    
+                }
+                catch (SocketTimeoutException s)
+                {
+                        System.out.println ("Socket timed out!");
+                        break;
+                }
+                catch(IOException e)
+                {
+                        e.printStackTrace();
+                        break;
+                }
+                try{             
 
                     //parse the serverString to get the lat and lon
                     myScanner = new Scanner(ServerString);
@@ -62,8 +83,7 @@ public class ServerStuff extends Thread{
                     Longitude = myScanner.next();
                     myScanner.close();
 
-                    //IP comes with port number
-                    remoteIP = (NewClientSocket.getRemoteSocketAddress().toString());
+                    
                     //trim the fat
                     remoteIP = remoteIP.substring(remoteIP.indexOf("/")+1, remoteIP.indexOf(":"));
 
@@ -74,16 +94,9 @@ public class ServerStuff extends Thread{
                     dbAccess.insertNodePosition(remoteIP,Latitude,Longitude);
                     dbAccess.insertNetgraph(graphOfIP);
                     
-                    // Echo it back
-                    DataOutputStream out = new DataOutputStream (NewClientSocket.getOutputStream());
-                    out.writeUTF ("was successful");
-                    NewClientSocket.close();
+                    
                 }
-                catch (SocketTimeoutException s)
-                {
-                        System.out.println ("Socket timed out!");
-                        break;
-                }
+                
                 catch(IOException e)
                 {
                         e.printStackTrace();
