@@ -90,6 +90,7 @@ public class ServerStuff extends Thread{
                     //Make a graph of the path to remoteIP
                     InetAddress placeToTrace = InetAddress.getByName(remoteIP);
                     TRgraph graphOfIP = new TRgraph(placeToTrace);
+                    graphOfIP.buildGraph();
 
                     dbAccess.insertNodePosition(remoteIP,Latitude,Longitude);
                     dbAccess.insertNetgraph(graphOfIP);
