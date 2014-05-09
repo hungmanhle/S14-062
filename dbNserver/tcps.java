@@ -59,13 +59,10 @@ public class tcps extends Thread
 	
 	public Connection getConnection() throws SQLException {
 		Connection conn = null;
-		Properties connProps = new Properties();
 		
-		connProps.put("username", "root");
-		connProps.put("password", "poop");
 		
 		conn = DriverManager.getConnection(
-				"jdbc:mysql://localhost:3306/predicative?user=hank&password=password");
+				"jdbc:mysql://localhost:3306/predicative?user=hank&password=poop1234");
 		System.out.println("MySql Connection established");
 		
 		return conn;
