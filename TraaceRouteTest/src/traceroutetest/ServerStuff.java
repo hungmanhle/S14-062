@@ -44,9 +44,6 @@ public class ServerStuff extends Thread{
             {
                 try
                 {
-                    
-
-
                     // Listen for connections and accept
                     System.out.println ("Listening on port: " + ListeningSocket.getLocalPort());
                     Socket NewClientSocket = ListeningSocket.accept();
@@ -56,48 +53,37 @@ public class ServerStuff extends Thread{
                     DataInputStream in = new DataInputStream (NewClientSocket.getInputStream());
                     ServerString = in.readUTF();
                     
-                     // Echo it back
-                    DataOutputStream out = new DataOutputStream (NewClientSocket.getOutputStream());
-                    out.writeUTF ("I now know where you are!");
+                    
                     //IP comes with port number
-                    remoteIP = (NewClientSocket.getRemoteSocketAddress().toString());
+                    remoteIP = (NewClientSocket.getRemoteSocketAddress().toString()); 
                     
-                    NewClientSocket.close();
-                    
-                }
-                catch (SocketTimeoutException s)
-                {
-                        System.out.println ("Socket timed out!");
-                        break;
-                }
-                catch(IOException e)
-                {
-                        e.printStackTrace();
-                        break;
-                }
-                try{             
-
                     //parse the serverString to get the lat and lon
                     myScanner = new Scanner(ServerString);
                     Latitude = myScanner.next();
                     Longitude = myScanner.next();
                     myScanner.close();
-
                     
                     //trim the fat
                     remoteIP = remoteIP.substring(remoteIP.indexOf("/")+1, remoteIP.indexOf(":"));
 
                     //Make a graph of the path to remoteIP
                     InetAddress placeToTrace = InetAddress.getByName(remoteIP);
-                    TRgraph graphOfIP = new TRgraph(placeToTrace);
-                    graphOfIP.buildGraph();
+                    TRgraph graphOfIP =TRgraph.buildGraph(placeToTrace);
+                    
 
                     dbAccess.insertNodePosition(remoteIP,Latitude,Longitude);
                     dbAccess.insertNetgraph(graphOfIP);
                     
-                    
+                     // Echo it back
+                    DataOutputStream out = new DataOutputStream (NewClientSocket.getOutputStream());
+                    out.writeUTF ("I now know where you are!");
+                    NewClientSocket.close();     
                 }
-                
+                catch (SocketTimeoutException s)
+                {
+                        System.out.println ("Socket timed out!");
+                        break;
+                }
                 catch(IOException e)
                 {
                         e.printStackTrace();

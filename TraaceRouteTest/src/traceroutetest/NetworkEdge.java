@@ -16,7 +16,7 @@ public class NetworkEdge {
     
     public NetworkEdge (TRLine one, TRLine two)
     {
-        //make sure the IP that is  lexicographically is node1
+        //make sure the IP that is  lexicographically first is node1
         if (one.getIpAddr().compareTo(two.getIpAddr()) < 0){
             node1 = one.getIpAddr();
             node2 = two.getIpAddr();

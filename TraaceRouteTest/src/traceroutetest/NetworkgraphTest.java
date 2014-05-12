@@ -4,13 +4,12 @@
  */
 package traceroutetest;
 
-import java.io.IOException;
-import java.io.StringWriter;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.io.IOUtils;
+
 
 /**
  *
@@ -31,8 +30,7 @@ public class NetworkgraphTest {
             
            // result = traceRoute(placeToTrace);
             //System.out.println(result + "\n");
-            TRgraph trm = new TRgraph(placeToTrace);
-            trm.buildGraph();
+            TRgraph trm = TRgraph.buildGraph(placeToTrace);
             
            // for(int i = 0; i < (trm.getNodeCount()-1); i++)
             //{
