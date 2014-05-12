@@ -18,45 +18,51 @@ public class TRgraph {
     private ArrayList<TRLine> nodeList;
     private ArrayList<NetworkEdge> edgeList;
     private int nodeCount;
+    private int numTimeouts;
     
-    public TRgraph(InetAddress address)
+    private TRgraph()
     {
-        dump = traceRoute(address);
+        //dump = buildGraph(address);
         nodeList = new ArrayList();
         edgeList = new ArrayList();
         nodeCount = 0;
+        numTimeouts = 0;
         
     }
     
-    public void buildGraph()
+//    public void buildGraph()
+//    {
+//        findNodeCount();
+//        buildNodeList();
+//        buildEdgeList();
+//    }
+//    
+    private void addNode(String rawLine) 
     {
-        findNodeCount();
-        buildNodeList();
-        buildEdgeList();
-    }
-    
-    private void buildNodeList() {
+        int parse;
         
-        Scanner scan = new Scanner(getDump());
-        //get past the bs at top
-        scan.nextLine(); scan.nextLine(); scan.nextLine();
+        TRLine tmpNode = new TRLine(rawLine);
         
-        int i;
-        for(i = 0; i < nodeCount; i++)
+        if((parse=tmpNode.parseLine())==1)//it was a good line
         {
-            String tmpLine = scan.nextLine();
-            TRLine tmpNode = new TRLine(tmpLine);
-            tmpNode.parseLine();
             nodeList.add(tmpNode);
+            nodeCount++;
         }
+        else if (parse == 0)//timeout
+        {
+            numTimeouts++;
+        }
+                
+        
         
     }
     
-    private static String traceRoute(InetAddress address){
-        String route = "";
-        
+    public static TRgraph buildGraph(InetAddress address)
+    { 
+        String tmpLine = "";
+        Scanner scan;
         StringWriter writer = new StringWriter();
-                    
+        TRgraph tmpGraph = new TRgraph();            
         
         try {
             Process traceRt;
@@ -65,13 +71,25 @@ public class TRgraph {
             traceRt = Runtime.getRuntime().exec("tracert -d -4 " + address.getHostAddress());
 
             // read the output from the command
-            IOUtils.copy(traceRt.getInputStream(), writer, "UTF-8");
-            route = writer.toString();
-                        
-
+            scan = new Scanner(traceRt.getInputStream());
+//            IOUtils.copy(traceRt.getInputStream(), writer, "UTF-8");
+//            route = writer.toString();
+            while (scan.hasNextLine())
+            {
+                tmpLine=scan.nextLine();
+                tmpGraph.addNode(tmpLine);
+                tmpGraph.dump += tmpLine + "\n";
+                if(tmpGraph.numTimeouts > 5)
+                {
+                    //if it does timeout this many times it has probably gotten to the end node. but we aren't making that assumption
+                    break;
+                }
+                
+            }
+            tmpGraph.buildEdgeList();
             // read any errors from the attempted command
-            IOUtils.copy(traceRt.getErrorStream(), writer, "UTF-8");
-            String errors = writer.toString();
+//            IOUtils.copy(traceRt.getErrorStream(), writer, "UTF-8");
+//            String errors = writer.toString();
                         
             
            // if(errors.equals("")) System.out.println(errors);
@@ -80,21 +98,21 @@ public class TRgraph {
             System.out.println("error while performing trace route command:"+ e);
         }
 
-       return route;
+       return tmpGraph;
     }
     
-    private void findNodeCount() {
-        
-        
-        
-        Scanner scan = new Scanner(getDump());
-        int i;
-        for(i = 0; scan.hasNextLine(); i++)
-        {
-            scan.nextLine();
-        }
-        nodeCount = i - EXTRA_LINES;
-    }
+//    private void findNodeCount() {
+//        
+//        
+//        
+//        Scanner scan = new Scanner(getDump());
+//        int i;
+//        for(i = 0; scan.hasNextLine(); i++)
+//        {
+//            scan.nextLine();
+//        }
+//        nodeCount = i - EXTRA_LINES;
+//    }
     
     
     private void buildEdgeList()

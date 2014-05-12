@@ -8,7 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
+
 
 /**
  *
@@ -53,7 +53,8 @@ public class DBStuff {
         Statement mysqlStatement = connection.createStatement();
 
         connection.setAutoCommit(false);
-
+            
+        //HUNG CHANGE NAMES HERRE
         mysqlStatement.executeUpdate("INSERT INTO test1 (ipAddress, latCoord, longCoord) VALUES ('" + IP + "','" + Latitude + "','" + Longitude + "')");
         connection.commit();
 
@@ -74,6 +75,7 @@ public class DBStuff {
             String node1   = graph.getEdge(i).getNode1();
             String node2   = graph.getEdge(i).getNode2();
             int    hopTime = graph.getEdge(i).getHopTime();
+            //HUNG CHANGE NAMES HERRE
             mysqlStatement.executeUpdate("INSERT INTO test2 (node1, node2, hopTime) VALUES ('" + node1 + "','" + node2 + "','" + hopTime + "')");
             connection.commit();
         }
