@@ -84,8 +84,8 @@ public class tcps extends Thread
 		}
 	}
 	
-	public void insertNewRow(String IP, String Latitude, String Longitude) throws SQLException{
-		
+	public boolean insertNewRow(String IP, String Latitude, String Longitude) throws SQLException{
+		try {
 			Connection mysqlConn = getConnection();
 			Statement mysqlStatement = mysqlConn.createStatement();
 			
@@ -96,7 +96,10 @@ public class tcps extends Thread
 			
 			mysqlConn.setAutoCommit(true);
 			closeConnection(mysqlConn);
-
+			return true;
+		} catch (SQLException e){
+			return false;
+		}
 	}
 
 	public void run()
@@ -159,13 +162,16 @@ public class tcps extends Thread
 				remoteIP = (NewClientSocket.getRemoteSocketAddress().toString());
 				remoteIP = remoteIP.substring(remoteIP.indexOf("/")+1, remoteIP.indexOf(":"));
 
+				String returnMessage;
 				
-				
-				insertNewRow(remoteIP,Latitude,Longitude);
+				returnMessage = insertNewRow(remoteIP,Latitude,Longitude)? "was successful" :  "failed";
 				
 				// Echo it back
 				DataOutputStream out = new DataOutputStream (NewClientSocket.getOutputStream());
-				out.writeUTF ("was successful");
+				out.writeUTF (returnMessage);
+				System.out.println("-----------------");
+				System.out.println(returnMessage);
+				System.out.println("-----------------");
 				NewClientSocket.close();
 			}
 			catch (SocketTimeoutException s)
