@@ -43,6 +43,7 @@ public class ServerStuff extends Thread{
             try
             {
                 // Get the client string
+				
                 DataInputStream in = new DataInputStream (connectedSocket.getInputStream());
                 ServerString = in.readUTF();
                 
@@ -124,7 +125,9 @@ public class ServerStuff extends Thread{
     //switch condition
     while(true) {
         try { 
-            Socket tmp = sock.accept();
+            System.out.println("Listening on 4747");
+			Socket tmp = sock.accept();
+			
             new ServerStuff(tmp).start();
             System.out.println ("Connection from: "+ tmp.getRemoteSocketAddress());
         } catch (IOException e) {
