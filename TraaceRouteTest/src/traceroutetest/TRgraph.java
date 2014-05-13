@@ -69,7 +69,9 @@ public class TRgraph {
             //if(os.contains("win")) traceRt = Runtime.getRuntime().exec("tracert " + address.getHostAddress());
             //else 
             traceRt = Runtime.getRuntime().exec("tracert -d -4 " + address.getHostAddress());
-
+			//System.out.println(address.getHostAddress());
+			
+			
             // read the output from the command
             scan = new Scanner(traceRt.getInputStream());
 //            IOUtils.copy(traceRt.getInputStream(), writer, "UTF-8");
@@ -81,7 +83,8 @@ public class TRgraph {
                 tmpGraph.dump += tmpLine + "\n";
                 if(tmpGraph.numTimeouts > 5)
                 {
-                    //if it does timeout this many times it has probably gotten to the end node. but we aren't making that assumption
+                    //if it does timeout this many times it has probably gotten to the end node. we are making that assumption
+					tmpGraph.addNode("1 4 ms 4 ms 4 ms " + address.getHostAddress()); 
                     break;
                 }
                 
