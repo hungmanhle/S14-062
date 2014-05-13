@@ -101,6 +101,15 @@ public class tcps extends Thread
 			closeConnection(mysqlConn);
 
 	}
+    
+    private void readPacket() {
+    
+        myScanner = new Scanner(ServerString);
+        Latitude = myScanner.next();
+        Longitude = myScanner.next();
+        myScanner.close();
+	
+    }
 
 	public void run()
 	{
@@ -112,36 +121,6 @@ public class tcps extends Thread
 				String Latitude = "";
 				String Longitude = "";
 				
-				/**    THIS SHIT OLD
-				// Set up mysql Connection
-				mysqlConn = getConnection();
-
-				Statement mysqlStatement = mysqlConn.createStatement();
-				mysqlConn.setAutoCommit(false);
-				
-				mysqlStatement.executeUpdate("INSERT INTO test1 (ipAddress,latCoord,longCoord) VALUES ('test','test','test')");
-				mysqlConn.commit();
-				
-				mysqlConn.setAutoCommit(true);
-				String query = "Select * FROM test1";
-				mysqlStatement = mysqlConn.getConnection();
-				
-				ResultSet mysqlRs = mysqlStatement.executeQuery(query);
-				
-				while(mysqlRs.next()){
-					System.out.println("ID: "+mysqlRs.getInt("id"));
-					System.out.println("IP: "+mysqlRs.getString("ipAddress"));
-					System.out.println("LAT: " + mysqlRs.getString("latCoord"));
-					System.out.println("LONG: " + mysqlRs.getString("longCoord"));
-				}
-				mysqlStatement.close();
-				// Closing mysql Connection
-				closeConnection(mysqlConn);
-			
-				*/
-			
-			
-			
 				// Listen for connections and accept
 				System.out.println ("Listening on port: " + ListeningSocket.getLocalPort());
 				Socket NewClientSocket = ListeningSocket.accept();
@@ -154,10 +133,6 @@ public class tcps extends Thread
 
 				
 
-				myScanner = new Scanner(ServerString);
-				Latitude = myScanner.next();
-				Longitude = myScanner.next();
-				myScanner.close();
 				
 				remoteIP = (NewClientSocket.getRemoteSocketAddress().toString());
 				remoteIP = remoteIP.substring(remoteIP.indexOf("/")+1, remoteIP.indexOf(":"));
