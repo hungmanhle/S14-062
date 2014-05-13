@@ -56,7 +56,6 @@ public class llcoolfinder extends Object{
 	public Connection getConnection() throws SQLException {
 		Connection conn = null;
 		
-		
 		conn = DriverManager.getConnection(
 				"jdbc:mysql://localhost:3306/predicative?user=hank&password=poop1234");
 		System.out.println("MySql Connection established");
@@ -114,7 +113,6 @@ public class llcoolfinder extends Object{
 		closeConnection(mysqlConn);
 		
 		return true;
-
 	}
 	
 	public String getUnknownIP(){
@@ -125,11 +123,10 @@ public class llcoolfinder extends Object{
 		return true;
 	}
 	
-
 	public static void main(String[] args){
 		if(args.length != 1)
 		{
-			System.out.println("Usage error: missing input");
+			System.out.println("Usage error: missing input - IP Address");
 			System.exit(0);
 		}
 		llcoolfinder myObject = new llcoolfinder(args[0]);
@@ -150,9 +147,6 @@ public class llcoolfinder extends Object{
 		
 		} catch(SQLException e){
 			e.printStackTrace();
-		}
-		
-		
-		
+		}		
 	}
 }
