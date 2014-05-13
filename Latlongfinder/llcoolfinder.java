@@ -93,6 +93,8 @@ public class llcoolfinder extends Object{
 		// Continue to worst case
 		if (!rs.isBeforeFirst() ) {    
 			System.out.println(unknownIP +" not found in T1"); 
+			mysqlStatement.close();
+			closeConnection(mysqlConn);
 			return false;
 		} 
         // Continue with best case
