@@ -40,7 +40,11 @@ public class ServerStuff extends Thread{
             String Latitude = "";
             String Longitude = "";
             String ServerString;
-            while(true)
+            
+			String dataSuccess1;
+			String dataSuccess2;
+			
+			while(true)
             {
                 try
                 {
@@ -71,13 +75,25 @@ public class ServerStuff extends Thread{
                     TRgraph graphOfIP =TRgraph.buildGraph(placeToTrace);
                     
 
-                    dbAccess.insertNodePosition(remoteIP,Latitude,Longitude);
-                    dbAccess.insertNetgraph(graphOfIP);
+                    //dbAccess.insertNodePosition(remoteIP,Latitude,Longitude);
+                    //dbAccess.insertNetgraph(graphOfIP);
                     
+					dataSuccess1 = (dbAccess.insertNodePosition(remoteIP,Latitude,Longitude))? "Coordinates for "+remoteIP+" stored successfully" : "Failed to store coordinates";
+					dataSuccess2 = (dbAccess.insertNetgraph(graphOfIP))? "Graph successfully stored" : "Failed to store graph";
+					
+					
                      // Echo it back
                     DataOutputStream out = new DataOutputStream (NewClientSocket.getOutputStream());
-                    out.writeUTF ("I now know where you are!");
-                    NewClientSocket.close();     
+                    
+					out.writeUTF (dataSuccess1);
+					out.writeUTF (dataSuccess2);
+					System.out.println("-----------------");
+					System.out.println("1. " +dataSuccess1);
+					System.out.println("2. " +dataSuccess2);
+					System.out.println("-----------------");
+					
+					
+					NewClientSocket.close();     
                 }
                 catch (SocketTimeoutException s)
                 {
@@ -89,12 +105,33 @@ public class ServerStuff extends Thread{
                         e.printStackTrace();
                         break;
                 }
-                catch(SQLException e)
+                /* SQLExceptions are caught in their methods.
+				catch(SQLException e)
                 {
                         e.printStackTrace();
                         break;
                 }
+				*/
             }
 	}
+	
+    public static void main (String [] args)
+    {
+		try
+		{
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+		
+		
+			Thread t = new ServerStuff (4747);
+			t.start();
+		} catch(IOException e){
+			e.printStackTrace();
+		} catch (java.lang.ClassNotFoundException e){
+			e.printStackTrace();
+		} catch(Exception e){
+			e.printStackTrace();
+		} 
+		
+    }
     
 }

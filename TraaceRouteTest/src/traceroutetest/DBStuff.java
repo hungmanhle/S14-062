@@ -16,7 +16,7 @@ import java.sql.Statement;
  */
 public class DBStuff {
 
-    public static final String URL = "jdbc:mysql://localhost:3306/predicative?user=hank&password=password";
+    public static final String URL = "jdbc:mysql://localhost:3306/predicative?user=hank&password=poop1234";
     private Connection connection;
     
     public DBStuff() throws SQLException 
@@ -46,42 +46,61 @@ public class DBStuff {
         }
     }
 
-    public void insertNodePosition(String IP, String Latitude, String Longitude) throws SQLException 
+    public boolean insertNodePosition(String IP, String Latitude, String Longitude) 
     {
+		try{
+			openConnection();
+			Statement mysqlStatement = connection.createStatement();
 
-        openConnection();
-        Statement mysqlStatement = connection.createStatement();
+			connection.setAutoCommit(false);
+				
+			//HUNG CHANGE NAMES HERRE
+			mysqlStatement.executeUpdate("INSERT INTO test1 (ipAddress, latCoord, longCoord) VALUES ('" + IP + "','" + Latitude + "','" + Longitude + "')");
+			connection.commit();
 
-        connection.setAutoCommit(false);
-            
-        //HUNG CHANGE NAMES HERRE
-        mysqlStatement.executeUpdate("INSERT INTO test1 (ipAddress, latCoord, longCoord) VALUES ('" + IP + "','" + Latitude + "','" + Longitude + "')");
-        connection.commit();
-
-        connection.setAutoCommit(true);
-        closeConnection();
-
+			connection.setAutoCommit(true);
+			closeConnection();
+			return true;
+		} catch (SQLException e){
+			System.out.println("SQLException: "+e);
+			//e.printStackTrace();
+			return false;
+		}
+		
     }
     
-    public void insertNetgraph(TRgraph graph) throws SQLException 
+	public boolean insertNodeEdge(String node1, String node2, int hopTime){
+		try{
+			openConnection();
+			Statement mysqlStatement = connection.createStatement();
+			connection.setAutoCommit(false);
+			
+			mysqlStatement.executeUpdate("INSERT INTO nodelist (nodeA, nodeB, hopTime) VALUES ('" + node1 + "','" + node2 + "','" + hopTime + "')");
+			connection.commit();
+			connection.setAutoCommit(true);
+			closeConnection();
+			return true;
+		} catch (SQLException e){
+			System.out.println("SQLException: " + e);
+			return false;
+		}
+	}
+	
+	
+    public boolean insertNetgraph(TRgraph graph)
     {
-        openConnection();
-        Statement mysqlStatement = connection.createStatement();
-        
-        connection.setAutoCommit(false);
-        //-1 so as not to go out of range
-        for (int i = 0; i < (graph.getNodeCount()-1); i++)
-        {
-            String node1   = graph.getEdge(i).getNode1();
-            String node2   = graph.getEdge(i).getNode2();
-            int    hopTime = graph.getEdge(i).getHopTime();
-            //HUNG CHANGE NAMES HERRE
-            mysqlStatement.executeUpdate("INSERT INTO test2 (node1, node2, hopTime) VALUES ('" + node1 + "','" + node2 + "','" + hopTime + "')");
-            connection.commit();
-        }
-        connection.setAutoCommit(true);
-        closeConnection();
-
+		for (int i = 0; i < (graph.getNodeCount()-1); i++)
+		{
+			String node1   = graph.getEdge(i).getNode1();
+			String node2   = graph.getEdge(i).getNode2();
+			int    hopTime = graph.getEdge(i).getHopTime();
+			//HUNG CHANGE NAMES HERRE
+			if(!insertNodeEdge(node1,node2,hopTime)){
+				//System.out.println("A row with PK {"+node1+" , "+node2+"} already existed...");
+			}
+			
+		}
+		return true;
     }
     
     
