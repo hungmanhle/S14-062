@@ -1,4 +1,3 @@
-package llcoolfinder;
 
 
 /*---------------------------------------------------------------------------------------
@@ -40,17 +39,21 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class llcoolfinder extends Object {
+public class Llcoolfinder extends Object {
 
-    private String unknownIP;
+    
     private String closestNodeIP;
     private String closestNodeLat;
     private String closestNodeLon;
     private ArrayList<String> IPsToCheck;
+    private int numHops;
 
-    public llcoolfinder(String ipAddress) {
-        unknownIP = ipAddress;
+    public Llcoolfinder(String ipAddress) {
+        IPsToCheck  = new ArrayList();
+        IPsToCheck.add(ipAddress);
     }
 
     /*
@@ -61,7 +64,7 @@ public class llcoolfinder extends Object {
 
 
         conn = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/predicative?user=hank&password=poop1234");
+                "jdbc:mysql://localhost:4747/test?user=root&password=test");
         System.out.println("MySql Connection established");
 
         return conn;
@@ -82,16 +85,16 @@ public class llcoolfinder extends Object {
         }
     }
 
-    public boolean findInTable1(String unknownIP) throws SQLException {
+    public boolean findInTable1(int index) throws SQLException {
 
         Connection mysqlConn = getConnection();
         Statement mysqlStatement = mysqlConn.createStatement();
 
-        ResultSet rs = mysqlStatement.executeQuery("SELECT * FROM test1 WHERE ipAddress = '" + unknownIP + "';");
+        ResultSet rs = mysqlStatement.executeQuery("SELECT * FROM test1 WHERE ipAddress = '" + IPsToCheck.get(index) + "';");
 
         // Continue to worst case
         if (!rs.isBeforeFirst()) {
-            System.out.println(unknownIP + " not found in T1");
+            System.out.println(IPsToCheck.get(index) + " not found in T1");
             mysqlStatement.close();
             closeConnection(mysqlConn);
             return false;
@@ -99,7 +102,7 @@ public class llcoolfinder extends Object {
         // Continue with best case
         while (rs.next()) {
             //Retrieve by column name
-            closestNodeIP = unknownIP;
+            closestNodeIP = IPsToCheck.get(index);
             closestNodeLat = rs.getString("latCoord");
             closestNodeLon = rs.getString("longCoord");
 
@@ -118,19 +121,19 @@ public class llcoolfinder extends Object {
 
     }
     
-    public boolean findInTable2(String unknownIP) throws SQLException
+    public boolean findInTable2(int index) throws SQLException
     {
         
         Connection mysqlConn = getConnection();
         Statement mysqlStatement = mysqlConn.createStatement();
-        String queryString1 = "SELECT node1 FROM test2 WHERE node2 = '" + unknownIP + "';";
-        String queryString2 = "SELECT node2 FROM test2 WHERE node1 = '" + unknownIP + "';";
+        String queryString1 = "SELECT nodeA FROM nodeList WHERE nodeB = '" + IPsToCheck.get(index) + "';";
+        String queryString2 = "SELECT nodeB FROM nodeList WHERE nodeA = '" + IPsToCheck.get(index) + "';";
         
         
         ResultSet rs = mysqlStatement.executeQuery(queryString1);
         // Continue to worst case
         if (!rs.isBeforeFirst()) {
-            System.out.println(unknownIP + " not found in T1");
+            System.out.println(IPsToCheck.get(index) + " not found in T2");
             mysqlStatement.close();
             closeConnection(mysqlConn);
             return false;
@@ -138,12 +141,18 @@ public class llcoolfinder extends Object {
         
         while(rs.next())
         {
-            IPsToCheck.add(rs.getString("node1"));
+            if(IPsToCheck.indexOf(rs.getString("nodeA"))== -1)
+            {
+                IPsToCheck.add(rs.getString("nodeA"));
+            }
         }
         rs =  mysqlStatement.executeQuery(queryString2);
         while(rs.next())
         {
-            IPsToCheck.add(rs.getString("node2"));
+            if(IPsToCheck.indexOf(rs.getString("nodeB"))== -1)
+            {
+                IPsToCheck.add(rs.getString("nodeB"));
+            }
         }
 //        for(String ip : IPsToCheck)
 //        {
@@ -158,27 +167,23 @@ public class llcoolfinder extends Object {
     
     public boolean findClosestNode() throws SQLException
     {
-        if(findInTable1(unknownIP))
-        {
-            return true;
-        }
-        if(findInTable2(unknownIP))
-        {
-            for (int i = 0; i < 3; i++)
+        int index = 0;
+        while(index < IPsToCheck.size()){
+            
+            if(findInTable1(index))
             {
-                for (int j = 0; j < IPsToCheck.size(); j++)
-                {
-                    findInTable1(IPsToCheck.get(j));
-                    
-                }
+                return true;
             }
+            if(!findInTable2(index))
+            {
+                
+            }
+            index++;
         }
-        return true;
+        return false;
     }
     
-    public String getUnknownIP() {
-        return unknownIP;
-    }
+  
 
     public boolean createIPList() {
         return true;
@@ -189,7 +194,7 @@ public class llcoolfinder extends Object {
             System.out.println("Usage error: missing input");
             System.exit(0);
         }
-        llcoolfinder myObject = new llcoolfinder(args[0]);
+        Llcoolfinder myObject = new Llcoolfinder(args[0]);
 
 
         /*
@@ -198,14 +203,20 @@ public class llcoolfinder extends Object {
          Find in Table1
          */
         try {
-
-            if (myObject.findInTable1(myObject.getUnknownIP())) {
-                System.out.println("The IP was already known.");
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            if (!myObject.findClosestNode()) {
+                System.out.println("The IP cannot be found.");
             } else {
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Llcoolfinder.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(Llcoolfinder.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(Llcoolfinder.class.getName()).log(Level.SEVERE, null, ex);
         }
 
 
