@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package traceroutetest;
 
 import java.io.DataInputStream;
@@ -14,12 +11,36 @@ import java.net.SocketTimeoutException;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-/**
- *
- * @author a00826347
- */
+/*---------------------------------------------------------------------------------------
+ ServerStuff.java - This application acts as a server. It recieves requests and adds
+					IPs and their GPS locations to the first table of our database.
+					It then runs a tracert and adds the two nodes of every edge to our
+					second table.
+
+ Classes:			ServerStuff.java
+					DBStuff.java
+					TRgraph.java
+				
+				
+
+ Date:			May 12, 2014
+
+ By:			Hung Le
+
+
+ Notes:
+ 
+
+ Generate the class file and run it as follows:
+ javac ServerStuff.java
+	Note: I reccommend compiling everything at once with javac *.java
+ cd ..
+ java  -cp .;traceroutetest/mysql-connector-java-5.1.29-bin.jar 
+		traceroutetest/ServerStuff
+ ---------------------------------------------------------------------------------------*/
 public class ServerStuff extends Thread{
     
+	// dbAccess handles database access
     private DBStuff dbAccess;
 
     private Socket connectedSocket;
@@ -29,6 +50,15 @@ public class ServerStuff extends Thread{
         dbAccess = new DBStuff();
     }
         
+	/*
+		This is the threadproc.
+		
+		It occurs when a connection is received...
+		The input is taken in, delimited and then added to the first table.
+		
+		Afterwards a TRgraph is created and adds all the nodes to the second table.
+		
+	*/
     public void run()
 	{           
             Scanner myScanner;
@@ -102,62 +132,48 @@ public class ServerStuff extends Thread{
             */
 	}
 	
+	/*
+		The Main Thread.
+		
+		Server waits for a connection.
+	*/
     public static void main(String [] args) { 
 
-    ServerSocket sock = null;
-    
-    try {
-        Class.forName("com.mysql.jdbc.Driver").newInstance();
-        sock = new ServerSocket(4747);
-    } catch(IOException e) {
-        System.out.println("Error with port");
-        e.printStackTrace();
-        System.exit(1);
-    } catch (java.lang.ClassNotFoundException e){
-        e.printStackTrace();
-        System.exit(2);
-    } catch (Exception e) {
-       e.printStackTrace();
-        System.exit(3);
-    }
-    
-    
-    //switch condition
-    while(true) {
-        try { 
-            
-			Socket tmp = sock.accept();
-			
-            new ServerStuff(tmp).start();
-            //System.out.println ("Connection from: "+ tmp.getRemoteSocketAddress());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    //TODO cleanup
-}
-    
-  /*  
-    public static void main 
-    {
-		try
-		{
+		ServerSocket sock = null;
+		
+		try {
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			sock = new ServerSocket(4747);
+		} catch(IOException e) {
+			System.out.println("Error with port");
+			e.printStackTrace();
+			System.exit(1);
+		} catch (java.lang.ClassNotFoundException e){
+			e.printStackTrace();
+			System.exit(2);
+		} catch (Exception e) {
+		   e.printStackTrace();
+			System.exit(3);
+		}
+		
+		
+		//switch condition
+		while(true) {
+			try { 
+				
+				Socket tmp = sock.accept();
+				
+				new ServerStuff(tmp).start();
+				//System.out.println ("Connection from: "+ tmp.getRemoteSocketAddress());
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		//TODO cleanup
+	}
 
-		
-		
-			Thread t = new ServerStuff (4747);
-			t.start();
-		} catch(IOException e){
-			e.printStackTrace();
-		
-			e.printStackTrace();
-		} catch(Exception e){
-			e.printStackTrace();
-		} 
-		
-    }
-    */
+    
 }
