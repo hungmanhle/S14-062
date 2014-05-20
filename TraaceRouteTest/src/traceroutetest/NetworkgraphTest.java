@@ -23,6 +23,10 @@ public class NetworkgraphTest {
     
     private final static String os = System.getProperty("os.name");
     
+    /**
+     *
+     * @param args
+     */
     public static void main(String[] args) {
        // String result = "";
         try {

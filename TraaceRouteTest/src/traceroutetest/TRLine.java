@@ -7,29 +7,41 @@ package traceroutetest;
 import java.util.Scanner;
 
 /**
- *
- * @author a00826347
+ * For parsing and representing a line from traceroute
+ * @author William Perry
  */
 public class TRLine {
-
+    //the number of times each hop is pinged
     private static final int NUM_TESTS = 3;
+    // the raaw line from traceroute
     private String rawLine;
+    // teh parsed IP 
     private String IP;
+    // the average hop time between the nodes
     private int AverageHoptime;
 
+    /**
+     * Constructor
+     * @param TrLine line from traceroute
+     */
     public TRLine(String TrLine) {
         rawLine = TrLine;
         IP = "";
         AverageHoptime = 0;
         //parseLine();
     }
-    //retruns 0 if there was a timeout, 1 if it worked, -1 if it was a filler line
+    
+    /**
+     * parses a line
+     * @return 0 if there was a timeout, 1 if it worked, -1 if it was a filler line
+     */
     public int parseLine() {
         Scanner scan = new Scanner(rawLine);
 
         int tempTotal = 0;
         int numsamples = 0;
         String tempToken = "";
+        // only the lines we want start with ints
         if(scan.hasNextInt())
         {
             //get rid of line number        
@@ -82,10 +94,18 @@ public class TRLine {
         return 1;
     }
 
+    /**
+     * 
+     * @return 
+     */
     public int getAvgHopTime() {
         return AverageHoptime;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getIpAddr() {
         return IP;
     }
