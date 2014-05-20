@@ -35,7 +35,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-
+/**
+ *
+ */
 public class MainActivity extends Activity implements LocationListener {
 
     private static final int VIB_LEN = 500;
@@ -60,6 +62,11 @@ public class MainActivity extends Activity implements LocationListener {
     private String ipAddr;
     private int port;
 
+    /**
+     * On click action for the send button. It creates and excutes a new
+     * NetworkTask to send the latitude and longitude to the server.
+     * @param view
+     */
     public void onSend(View view)
     {
         btnSend.setVisibility(View.GONE);
@@ -67,7 +74,10 @@ public class MainActivity extends Activity implements LocationListener {
 //        new Thread(new NetworkThread()).start();
     }
 
-
+    /**
+     * Initializes the UI and provides handles to the UI elements.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +92,11 @@ public class MainActivity extends Activity implements LocationListener {
         btnSend     = (Button)findViewById(R.id.btn_send);
     }
 
+    /**
+     * Callback for when a change is noticed by the operating system.
+     * This stores the new location and updates the UI elements.
+     * @param location new location
+     */
     @Override
     public void onLocationChanged(Location location) {
         latitude = location.getLatitude();
@@ -91,11 +106,14 @@ public class MainActivity extends Activity implements LocationListener {
         tvLongitude.setText(String.valueOf(longitude));
     }
 
+    /**
+     * Checks if WiFi and Location Services are enabled, retreives the server's IP and port
+     * from the preferences.
+     *
+     */
     @Override
     protected void onResume() {
         super.onResume();
-
-        //TODO Check if a thread is not already running to display send button or not
 
         checkWifiSettings();
         checkLocationSettings();
@@ -108,6 +126,8 @@ public class MainActivity extends Activity implements LocationListener {
         String port_default = getResources().getString(R.string.pref_default_port);
         port = (int)Integer.parseInt(prefs.getString("pref_portnum", port_default));
 
+
+        /* Request location updates */
         List<String> enabledProviders;
         Criteria criteria = new Criteria();
 
@@ -126,11 +146,15 @@ public class MainActivity extends Activity implements LocationListener {
             }
         }
 
+        /* Display location values */
         tvLatitude.setText(String.valueOf(latitude));
         tvLongitude.setText(String.valueOf(longitude));
     }
 
-
+    /**
+     * Encompasses all of the networking aspects. Connects, sends, and displays
+     * feedback to the user and to a log file.
+     */
     private class NetworkTask extends AsyncTask<String, String, String> {
         private TCPConnection connection;
         private boolean keepLog;
@@ -142,6 +166,12 @@ public class MainActivity extends Activity implements LocationListener {
         private File file;
         private FileOutputStream fileStream;
 
+        /**
+         * Sets up the log file.
+         * Creates the file in the default extrnal storage folder under a folder
+         * for our app's name.
+         */
+        @Override
         protected void onPreExecute() {
             if((keepLog = isLogging())) {
                 filePath = Environment.getExternalStorageDirectory().getAbsolutePath()
@@ -156,6 +186,13 @@ public class MainActivity extends Activity implements LocationListener {
             file = new File(folder, filename);
         }
 
+        /**
+         * Bulk of the background task.
+         * Sends a number of packets to the server. Encompasses major networking components
+         * such as connecting and sending. Also writes to a log file.
+         * @param packets strings that will be sent to the server
+         * @return String will be shown as a toast to show feedback
+         */
         @Override
         protected String doInBackground(String... packets) {
 
@@ -224,16 +261,28 @@ public class MainActivity extends Activity implements LocationListener {
             return getResources().getString(R.string.tst_send_success);
         }
 
+        /**
+         * Displays feedback to the user.
+         * @param strings the strings to show the feedback to the user
+         */
         protected void onProgressUpdate(String... strings) {
             Toast.makeText(context, strings[0], Toast.LENGTH_SHORT).show();
         }
 
+        /**
+         * Clean up and exiting the NetworkTask.
+         * @param string
+         */
         protected void onPostExecute(String string) {
             showButton(btnSend);
             scanFile(file.getAbsolutePath());
             Toast.makeText(context, string, Toast.LENGTH_SHORT).show();
         }
 
+        /**
+         * Helper for letting the system know a new file has been created.
+         * @param path the location of the new file.
+         */
         private void scanFile(String path) {
             MediaScannerConnection.scanFile(context,
                     new String[] { path }, null,
@@ -244,6 +293,11 @@ public class MainActivity extends Activity implements LocationListener {
                     });
         }
 
+        /**
+         * Returns whether or not to keep a log file by checking if
+         * the destination is writable and if the setting is enabled.
+         * @return true if ready to write; false otherwise
+         */
         private boolean isLogging() {
             if(prefs.getBoolean("pref_savelog", true)) {
                 if(!ExternalStorage.isExternalStorageWritable()) {
@@ -258,6 +312,12 @@ public class MainActivity extends Activity implements LocationListener {
 
     }
 
+    /**
+     * Creates an AlertDialog that will launch an intent.
+     * @param title AlertDialog title.
+     * @param message AlertDialog message.
+     * @param settings new Intent to start on AlertDialog positive action.
+     */
     private void promptSettings(final int title, final int message, final String settings) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -281,6 +341,11 @@ public class MainActivity extends Activity implements LocationListener {
         dialog.show();
     }
 
+
+    /**
+     * Called when the activity is no longer visible.
+     * Hides all AlertDialogs and removes location update requests.
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -358,6 +423,9 @@ public class MainActivity extends Activity implements LocationListener {
 
     }
 
+    /**
+     * Checks if the user specified vibration settings and vibrates if necessary.
+     */
     private void vibrate()
     {
         if(prefs.getBoolean("pref_vib", true)) {
@@ -365,22 +433,27 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
+    /**
+     * Checks if location services are enabled. Prompts to change settings
+     * if it isn't.
+     */
     private void checkLocationSettings() {
         if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
         {
             promptSettings(R.string.dlg_gps_title,
                     R.string.dlg_gps_body,
                     Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            return;
         }
     }
 
+    /**
+     * Checks if WiFi is enabled.
+     */
     private void checkWifiSettings() {
         if(!wifiMan.isWifiEnabled())
         {
             tvLatitude.setText(R.string.dlg_no_wifi);
             tvLongitude.setText(R.string.dlg_no_wifi);
-            return;
         }
     }
 

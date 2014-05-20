@@ -23,8 +23,9 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-//TODO Set ip and port defaults
-
+/**
+ * Settings page of the application. Allows to change vibration, log file, ip, and port.
+ */
 public class SettingsActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener
 {
     private static final String PATTERN =
@@ -43,6 +44,10 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
     private Preference pref_wifi;
 
 
+    /**
+     * Creates the UI elements for the different settings.
+     * @param savedInstanceState
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +57,8 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 
         pref_ipAddr = (EditTextPreference)findPreference("pref_ipaddr");
         pref_ipAddr.setSummary(sharedPrefs.getString("pref_ipaddr", ""));
+        /* Checks if new IP is valid IPv$ format and sets teh preference
+            summary to the new value. */
         pref_ipAddr.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object o) {
                 if (o instanceof String && isIPv4((String) o)) {
@@ -68,6 +75,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
         pref_saveLog = (CheckBoxPreference)findPreference("pref_savelog");
         pref_saveLog.setSummary(Environment.getExternalStorageDirectory().toString()
             + "/" + getResources().getString(R.string.app_name));
+        /* Checks if external storage is writeable to set teh new value.     */
         pref_saveLog.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
@@ -83,6 +91,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
         pref_dellog = (ListPreference)findPreference("pref_dellog");
         setLogProperties();
 
+        /* Prompts the user to select an app to open the file in */
         pref_open.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object o) {
                 try {
@@ -95,6 +104,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
             }
         });
 
+        /* Deletes a log file and updates the list of files available to delete and open */
         pref_dellog.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object o) {
                 if(!(o instanceof String))
@@ -134,6 +144,11 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
         });
     }
 
+    /**
+     * Checks the changed preference and handles the change appropriately.
+     * @param sharedPreferences the set which it belongs to
+     * @param key the changed preference
+     */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         String summaryStr;
@@ -156,6 +171,9 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
         }
     }
 
+    /**
+     * Sets the values and entries for the opoup listing the files.
+     */
     private void setLogProperties()
     {
         CharSequence[] values = getLogValues();
@@ -173,6 +191,10 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
         }
     }
 
+    /**
+     * Retreives the file names to display.
+     * @return the available files
+     */
     private CharSequence[] getLogEntries()
     {
         String rootPath = Environment.getExternalStorageDirectory().getAbsolutePath()
@@ -191,6 +213,10 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
         return entries;
     }
 
+    /**
+     * Gets the full path of the log files that will be required to open.
+     * @return the values to set to
+     */
     private CharSequence[] getLogValues()
     {
         String rootPath = Environment.getExternalStorageDirectory().getAbsolutePath()
@@ -225,6 +251,11 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
                 .unregisterOnSharedPreferenceChangeListener(this);
     }
 
+    /**
+     * Validates an ip address using a regular expression.
+     * @param ip address to validate.
+     * @return true if valid; false otherwise.
+     */
     public static boolean isIPv4(final String ip){
 
         Pattern pattern = Pattern.compile(PATTERN);
