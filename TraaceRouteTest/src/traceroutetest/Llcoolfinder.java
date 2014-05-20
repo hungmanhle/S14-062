@@ -1,3 +1,4 @@
+package traceroutetest;
 
 
 /*---------------------------------------------------------------------------------------
@@ -33,6 +34,8 @@
  java  llcoolfinder <IP Address>
  ---------------------------------------------------------------------------------------*/
 //import java.net.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -74,7 +77,7 @@ public class Llcoolfinder extends Object {
      closeConnection
      */
     public void closeConnection(Connection connArg) {
-        System.out.println("Releasing all open resources ...");
+       // System.out.println("Releasing all open resources ...");
         try {
             if (connArg != null) {
                 connArg.close();
@@ -121,7 +124,7 @@ public class Llcoolfinder extends Object {
 
     }
     
-    public boolean findInTable2(int index) throws SQLException
+    public boolean findInTable2(int index) throws SQLException, UnknownHostException
     {
         
         Connection mysqlConn = getConnection();
@@ -133,7 +136,18 @@ public class Llcoolfinder extends Object {
         ResultSet rs = mysqlStatement.executeQuery(queryString1);
         // Continue to worst case
         if (!rs.isBeforeFirst()) {
-            System.out.println(IPsToCheck.get(index) + " not found in T2");
+            System.out.println(IPsToCheck.get(index) + " not found in T2, running Traceroute");
+            InetAddress placeToTrace = InetAddress.getByName(IPsToCheck.get(index));
+            TRgraph graphOfIP =TRgraph.buildGraph(placeToTrace);
+            DBStuff dbAccess = new  DBStuff();
+            if(dbAccess.insertNetgraph(graphOfIP))
+            {
+                System.out.println("Traceroute complete");
+            }
+            else 
+            {
+                System.out.println("Traceroute failed");
+            }
             mysqlStatement.close();
             closeConnection(mysqlConn);
             return false;
@@ -165,7 +179,7 @@ public class Llcoolfinder extends Object {
         return true;
     }
     
-    public boolean findClosestNode() throws SQLException
+    public boolean findClosestNode() throws SQLException, UnknownHostException
     {
         int index = 0;
         while(index < IPsToCheck.size()){
@@ -182,6 +196,8 @@ public class Llcoolfinder extends Object {
         }
         return false;
     }
+    
+  
 
     public boolean createIPList() {
         return true;
@@ -197,6 +213,7 @@ public class Llcoolfinder extends Object {
 
         /*
          Best Case:
+			
          Find in Table1
          */
         try {
@@ -213,6 +230,8 @@ public class Llcoolfinder extends Object {
         } catch (InstantiationException ex) {
             Logger.getLogger(Llcoolfinder.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
+            Logger.getLogger(Llcoolfinder.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnknownHostException ex) {
             Logger.getLogger(Llcoolfinder.class.getName()).log(Level.SEVERE, null, ex);
         }
 
