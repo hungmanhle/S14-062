@@ -6,14 +6,6 @@ package traceroutetest;
 
  Classes:			llcoolfinder.java - Main class
 				
- Methods:
- getRemoteSocketAddress 	(Socket Class)
- getLocalSocketAddress  	(Socket Class)
- getInputStream		(Socket Class)
- getOutputStream		(Socket Class)
- getLocalPort		(ServerSocket Class)
- setSoTimeout		(ServerSocket Class)
- accept			(ServerSocket Class)
 				
 
  Date:			May 12, 2014
@@ -22,12 +14,8 @@ package traceroutetest;
 
 
  Notes:
- The program illustrates the use of the java.net package to implement a basic
- echo server.The server is multi-threaded so every new client connection is 
- handled by a separate thread.
-	
- The application receives a string from an echo client and simply sends back after 
- displaying it. 
+ This application attempts to return GPS coordinates of the closest node to a given IP
+ address.
 
  Generate the class file and run it as follows:
  javac llcoolfinder
@@ -53,10 +41,13 @@ public class Llcoolfinder extends Object {
     private String closestNodeLon;
     private ArrayList<String> IPsToCheck;
     private int numHops;
+	
+	private DBStuff dbAccess;
 
     public Llcoolfinder(String ipAddress) {
         IPsToCheck  = new ArrayList();
         IPsToCheck.add(ipAddress);
+		
     }
 
     /*
@@ -67,7 +58,7 @@ public class Llcoolfinder extends Object {
 
 
         conn = DriverManager.getConnection(
-                "jdbc:mysql://localhost:4747/test?user=root&password=test");
+                "jdbc:mysql://localhost:3306/predicative?user=hank&password=poop1234");
         System.out.println("MySql Connection established");
 
         return conn;
