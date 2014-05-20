@@ -1,28 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">Gateway Locator</string>
     <string name="title_activity_settings">Settings</string>
 
     <string name="action_settings">Settings</string>
-    <string name="action_gps">GPS Settings</string>
-    <string name="action_wifi">WiFi Settings</string>
-    <string name="action_refresh">Refresh</string>
 
     <string name="lbl_long">Longitude:</string>
     <string name="lbl_lat">Latitude:</string>
-    <string name="lbl_gate">Gateway:</string>
-    <string name="lbl_ipaddr">IP Address:</string>
-    <string name="lbl_port">Port Number:</string>
-    <string name="btn_action">Get Info</string>
     <string name="btn_network">Send</string>
-    <string name="ok">OK</string>
-    <string name="cancel">Not now</string>
+
+    <string name="tst_connect_fail">Could not connect to the Server</string>
+    <string name="tst_send_fail">Could not send the packet</string>
+    <string name="tst_send_success">Sending complete!</string>
+    <string name="tst_ext_unavailable">Could not access storage folder</string>
+    <string name="tst_log_unavailable">Could not open log file</string>
+    <string name="tst_write_unavailable">Could not write to log file</string>
+    <string name="tst_inval_ip">Invalid IPv4 format</string>
 
     <string name="dlg_no_wifi">Wi-Fi not on</string>
 
-    <string name="dlg_gps_title">Locating Method Error</string>
-    <string name="dlg_gps_body">You must set Locating Method to use Wi-Fi.</string>
-
-
+    <string name="dlg_gps_title">Location Settings Error</string>
+    <string name="dlg_gps_body">Enable your Location Settings and turn on the Wi-Fi provider.</string>
 </resources>
