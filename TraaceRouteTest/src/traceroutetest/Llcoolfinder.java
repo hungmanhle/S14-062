@@ -21,7 +21,7 @@ package traceroutetest;
  javac llcoolfinder
  java  llcoolfinder <IP Address>
  ---------------------------------------------------------------------------------------*/
-//import java.net.*;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Connection;
@@ -33,25 +33,38 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Program to find the location of a given IP address
+ * @author William
+ */
 public class Llcoolfinder extends Object {
 
-    
+    // these will be printed once the closest node is located
     private String closestNodeIP;
     private String closestNodeLat;
     private String closestNodeLon;
+    // the list of IPs which need to be looked up
+    // starts with just the original IP axpands as the search progresses
     private ArrayList<String> IPsToCheck;
-    private int numHops;
+    
 	
 	private DBStuff dbAccess;
 
+    /**
+     *  Constructor
+     * @param ipAddress the IP address to be located
+     */
     public Llcoolfinder(String ipAddress) {
         IPsToCheck  = new ArrayList();
         IPsToCheck.add(ipAddress);
 		
     }
 
-    /*
-     getConnection
+    
+    /**
+     * Opens a connection to the MySQL DB
+     * @return the SQLConnection
+     * @throws SQLException
      */
     public Connection getConnection() throws SQLException {
         Connection conn = null;
@@ -64,8 +77,10 @@ public class Llcoolfinder extends Object {
         return conn;
     }
 
-    /*
-     closeConnection
+    
+    /**
+     * Closes connection tothe MySQL DB
+     * @param connArg
      */
     public void closeConnection(Connection connArg) {
        // System.out.println("Releasing all open resources ...");
@@ -79,6 +94,12 @@ public class Llcoolfinder extends Object {
         }
     }
 
+    /**
+     * Looks for the IP in table1
+     * @param index the index of the IP in IPsToCheck
+     * @return true if found false if not
+     * @throws SQLException
+     */
     public boolean findInTable1(int index) throws SQLException {
 
         Connection mysqlConn = getConnection();
@@ -86,14 +107,14 @@ public class Llcoolfinder extends Object {
 
         ResultSet rs = mysqlStatement.executeQuery("SELECT * FROM test1 WHERE ipAddress = '" + IPsToCheck.get(index) + "';");
 
-        // Continue to worst case
+        // Continue to worst case: IP is not found
         if (!rs.isBeforeFirst()) {
             System.out.println(IPsToCheck.get(index) + " not found in T1");
             mysqlStatement.close();
             closeConnection(mysqlConn);
             return false;
         }
-        // Continue with best case
+        // Continue with best case: IP is found
         while (rs.next()) {
             //Retrieve by column name
             closestNodeIP = IPsToCheck.get(index);
@@ -115,19 +136,29 @@ public class Llcoolfinder extends Object {
 
     }
     
+    /**
+     *  Looks for the IP in table 2
+     * @param index the index in IPsToCheck
+     * @return true if found false if not
+     * @throws SQLException
+     * @throws UnknownHostException
+     */
     public boolean findInTable2(int index) throws SQLException, UnknownHostException
     {
         
         Connection mysqlConn = getConnection();
         Statement mysqlStatement = mysqlConn.createStatement();
+        //find all the the instances in which the IP being serched for is nodeB
         String queryString1 = "SELECT nodeA FROM nodeList WHERE nodeB = '" + IPsToCheck.get(index) + "';";
+        //find all the the instances in which the IP being serched for is nodeA
         String queryString2 = "SELECT nodeB FROM nodeList WHERE nodeA = '" + IPsToCheck.get(index) + "';";
         
         
         ResultSet rs = mysqlStatement.executeQuery(queryString1);
-        // Continue to worst case
+        // Continue to worst case: IP is not found
         if (!rs.isBeforeFirst()) {
             System.out.println(IPsToCheck.get(index) + " not found in T2, running Traceroute");
+            //run traceroute and store in table 2
             InetAddress placeToTrace = InetAddress.getByName(IPsToCheck.get(index));
             TRgraph graphOfIP =TRgraph.buildGraph(placeToTrace);
             DBStuff dbAccess = new  DBStuff();
@@ -143,7 +174,8 @@ public class Llcoolfinder extends Object {
             closeConnection(mysqlConn);
             return false;
         }
-        
+        // Continue to best case: IP is found 
+        // add all adjacent nodes to the IPsToCheck
         while(rs.next())
         {
             if(IPsToCheck.indexOf(rs.getString("nodeA"))== -1)
@@ -159,20 +191,21 @@ public class Llcoolfinder extends Object {
                 IPsToCheck.add(rs.getString("nodeB"));
             }
         }
-//        for(String ip : IPsToCheck)
-//        {
-//            if(findInTable1(ip))
-//            {
-//                return true;
-//            }
-//        }
-        
+//        
         return true;
     }
     
+    /**
+     * Finds the location and IP of the closest known node to the given IP
+     * @return true if a node was found false if not
+     * @throws SQLException
+     * @throws UnknownHostException
+     */
     public boolean findClosestNode() throws SQLException, UnknownHostException
     {
         int index = 0;
+        // Search in table1 then table2 for each IP in IPsToCheck
+        // this is a BFS
         while(index < IPsToCheck.size()){
             
             if(findInTable1(index))
@@ -190,10 +223,12 @@ public class Llcoolfinder extends Object {
     
   
 
-    public boolean createIPList() {
-        return true;
-    }
+   
 
+    /**
+     * Main access pint to the program
+     * @param args the IP that you would like to locate
+     */
     public static void main(String[] args) {
         if (args.length != 1) {
             System.out.println("Usage error: missing input");
@@ -202,16 +237,11 @@ public class Llcoolfinder extends Object {
         Llcoolfinder myObject = new Llcoolfinder(args[0]);
 
 
-        /*
-         Best Case:
-			
-         Find in Table1
-         */
+        
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             if (!myObject.findClosestNode()) {
                 System.out.println("The IP cannot be found.");
-            } else {
             }
 
         } catch (SQLException e) {

@@ -5,8 +5,8 @@
 package traceroutetest;
 
 /**
- *
- * @author a00826347
+ * representation of one edge of the network
+ * @author William Perry
  */
 public class NetworkEdge {
     
@@ -14,9 +14,15 @@ public class NetworkEdge {
     private String node2;
     private int hopTime;
     
+    /**
+     *
+     * @param one
+     * @param two
+     */
     public NetworkEdge (TRLine one, TRLine two)
     {
         //make sure the IP that is  lexicographically first is node1
+        //this prevents duplicate insertions in the DB
         if (one.getIpAddr().compareTo(two.getIpAddr()) < 0){
             node1 = one.getIpAddr();
             node2 = two.getIpAddr();
